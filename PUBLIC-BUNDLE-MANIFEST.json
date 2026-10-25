@@ -7,10 +7,10 @@
     "sha256": "f63f9e5a3565c0ec0b7ddfca624e80e68c8d2cc2bb0b004b0cf201a5c6639701"
   },
   "inventoryAlgorithm": "sha256(concat(sorted(path + '\\t' + sha256 + '\\n')))",
-  "inventoryHash": "9909f621f3d4be8946efec08f06e449c3c715304e0429edda2137e11486861da",
+  "inventoryHash": "b16028287999f4aa04a39d27d26215844c461f74f68946f84da80a0f148e8153",
   "counts": {
     "files": 1267,
-    "bytes": 9093153
+    "bytes": 9093231
   },
   "include": [
     "README.md",
@@ -7583,8 +7583,8 @@
     },
     {
       "path": "tools/container-acceptance.js",
-      "sha256": "b162b7bce08d87df57755f09c126d69c08e971654aac4f8ad6774fe2a659be3e",
-      "bytes": 4242,
+      "sha256": "777764bb31ddbcab6af7125098c2ce1817caf3c583ba6e27478b0e9602ccf98a",
+      "bytes": 4320,
       "mode": 420
     },
     {

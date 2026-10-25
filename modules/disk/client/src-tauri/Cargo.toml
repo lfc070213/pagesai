@@ -7,7 +7,7 @@ description = "PagesAI Disk desktop sync client"
 publish = false
 
 [build-dependencies]
-tauri-build = { version = "=2.6.3", features = [] }
+tauri-build = "=2.6.3"
 
 [dependencies]
 tauri = { version = "=2.11.5", features = [] }

@@ -17,6 +17,7 @@ async function request(route, body, token) {
 }
 const expect = (condition, label) => { if (!condition) throw Error(label); };
 async function main() {
+  for (const base of ['node:24-bookworm-slim','mongo:7']) run(['pull',base]);
   for (const name of ['app','gateway','mongo']) {
     run(['build','-f',`deploy/docker/Dockerfile.${name}`,'-t',`pagesai/${name}:local`,'.']);
     report.images[name] = JSON.parse(run(['image','inspect',`pagesai/${name}:local`]))[0].Id;
