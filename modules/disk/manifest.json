@@ -1,0 +1,31 @@
+{
+  "id": "disk",
+  "version": "0.2.0",
+  "coreCompatibility": "^1.0.0",
+  "requires": {
+    "infrastructure": []
+  },
+  "activation": {
+    "serverEntry": "server/index.js",
+    "routePrefix": "/api/disk",
+    "adminContribution": "server/admin.js"
+  },
+  "config": {
+    "schema": "config.schema.json",
+    "secrets": []
+  },
+  "data": {
+    "namespace": "disk",
+    "regions": [
+      "disk.user-files"
+    ]
+  },
+  "lifecycle": {
+    "start": "start",
+    "stop": "stop",
+    "health": "health"
+  },
+  "capabilities": {
+    "tools": []
+  }
+}

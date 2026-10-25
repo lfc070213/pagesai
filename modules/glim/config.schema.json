@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/modules/glim/config.schema.json",
+  "title": "Glim 模块配置",
+  "description": "Glim 可单独运行的配置。所有字段均可省略：省略 dataFile 时使用纯内存存储；省略 chatAdapter 时对话接口返回 409，不生成模拟回复。秘密字段不得写入示例值。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataFile": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "JsonStore 持久化文件路径；null/省略表示纯内存（测试或试用）。",
+      "minLength": 1
+    },
+    "memoryMaxChars": {
+      "type": "integer",
+      "description": "每用户长期记忆的最大字符数（按 Unicode 码点计）。",
+      "minimum": 1,
+      "maximum": 100000,
+      "default": 4000
+    },
+    "messageMaxChars": {
+      "type": "integer",
+      "description": "单条消息的最大字符数（按 Unicode 码点计）。",
+      "minimum": 1,
+      "maximum": 50000,
+      "default": 8000
+    },
+    "historyLimit": {
+      "type": "integer",
+      "description": "调用模型时最多携带的历史消息条数。",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 50
+    },
+    "systemPrompt": {
+      "type": "string",
+      "description": "可选系统提示词，只来自部署配置，不接受请求体覆盖。",
+      "maxLength": 8000
+    },
+    "chatAdapter": {
+      "type": "object",
+      "description": "模型适配器。仅支持部署者配置，未配置时对话与消息生成返回 409 glim.model_not_configured。",
+      "additionalProperties": false,
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "openai-compatible",
+            "http"
+          ],
+          "description": "适配器类型；当前仅实现 OpenAI 兼容的 JSON 请求。",
+          "default": "openai-compatible"
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "模型服务的完整 HTTP(S) 地址。",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "description": "请求时携带的模型名。",
+          "minLength": 1
+        },
+        "apiKey": {
+          "type": "string",
+          "description": "模型服务密钥；由部署秘密注入，禁止写在示例配置中。",
+          "minLength": 1
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "description": "单次模型请求超时（毫秒）。",
+          "minimum": 1000,
+          "maximum": 120000,
+          "default": 30000
+        }
+      }
+    },
+    "allowConnectorRegistration": {
+      "type": "boolean",
+      "description": "是否允许用户登记 connector（登记不等于授权）。",
+      "default": true
+    },
+    "requireAdminForConnectorRegistration": {
+      "type": "boolean",
+      "description": "登记 connector 是否要求管理员身份；默认关闭，便于 Glim 单独使用。",
+      "default": false
+    },
+    "trustedConnectorOrigins": {
+      "type": "array",
+      "description": "可选受信来源白名单（scheme://host[:port]）。一旦配置，未匹配的 connector 登记一律拒绝；空数组表示由登记动作本身作为信任行为。",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "maxConnectorsPerUser": {
+      "type": "integer",
+      "description": "每用户最多登记多少个 connector。",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 20
+    },
+    "workspaceRoot": {
+      "type": "string",
+      "description": "工作区根目录（部署者指定的绝对或相对路径）。省略时工作区接口返回 409，模型也不会获得工作区工具。",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "maxWorkspaceFileBytes": {
+      "type": "integer",
+      "description": "工作区单个文件的最大字节数。",
+      "minimum": 1024,
+      "maximum": 33554432,
+      "default": 2097152
+    },
+    "maxWorkspaceFiles": {
+      "type": "integer",
+      "description": "每用户工作区最多文件数。",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 200
+    },
+    "maxWorkspaceTotalBytes": {
+      "type": "integer",
+      "description": "每用户工作区总容量上限（字节）。",
+      "minimum": 1024,
+      "maximum": 1073741824,
+      "default": 20971520
+    },
+    "moduleDirectoryUrl": {
+      "type": "string",
+      "description": "公共核心模块目录地址（通常是 <origin>/api/modules）。只用于读取模块状态；不会授予任何数据权限。",
+      "pattern": "^https?://",
+      "maxLength": 2048
+    },
+    "moduleMinVersions": {
+      "type": "object",
+      "description": "各可选模块的最低版本要求；低于要求时发现状态为 incompatible。",
+      "additionalProperties": false,
+      "properties": {
+        "pages": { "type": "string", "maxLength": 32 },
+        "disk": { "type": "string", "maxLength": 32 },
+        "mail": { "type": "string", "maxLength": 32 },
+        "survey": { "type": "string", "maxLength": 32 },
+        "paper": { "type": "string", "maxLength": 32 }
+      }
+    },
+    "maxToolRounds": {
+      "type": "integer",
+      "description": "模型单次请求内允许的最大工具轮次。",
+      "minimum": 1,
+      "maximum": 8,
+      "default": 4
+    },
+    "maxRunningTasksPerUser": {
+      "type": "integer",
+      "description": "每用户同时运行的任务数；超出的任务保持排队。",
+      "minimum": 1,
+      "maximum": 4,
+      "default": 1
+    },
+    "auditLimit": {
+      "type": "integer",
+      "description": "每用户保留的审计记录条数，超出后删除最旧记录。",
+      "minimum": 10,
+      "maximum": 10000,
+      "default": 1000
+    }
+  }
+}

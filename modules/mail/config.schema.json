@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/modules/mail/config.schema.json",
+  "title": "Mail 模块配置",
+  "description": "Mail 模块只依赖 Node 内置模块。provider=smtp/imap 时由模块内置的真实协议客户端连接外部邮件服务；也可由部署代码注入 sendMail 或 listMessages 等适配器。邮箱凭据只从配置秘密字段或部署注入的解析器读取，模块不把明文凭据写入数据文件。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataFile": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "JsonStore 数据文件路径；缺省或 null 时使用纯内存存储（进程退出即丢弃）。"
+    },
+    "from": {
+      "type": ["string", "object"],
+      "description": "系统发件身份，例如 no-reply@example.com 或 { name, address }。用户不能覆盖该身份。",
+      "properties": {
+        "name": { "type": "string", "maxLength": 120 },
+        "address": { "type": "string", "minLength": 3, "maxLength": 320 }
+      },
+      "required": ["address"],
+      "additionalProperties": false
+    },
+    "userSendEnabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "是否允许普通用户通过 POST /api/mail/send 发信。默认关闭，系统验证码发信不受影响。"
+    },
+    "sendTimeoutMs": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 120000,
+      "description": "单次发信适配器调用超时（毫秒）。"
+    },
+    "transport": {
+      "type": "object",
+      "description": "发信适配器配置。provider=smtp 使用内置 SMTP 客户端；也可注入 sendMail 函数。未提供时发信接口返回 409 mail.transport_not_configured。",
+      "additionalProperties": true,
+      "properties": {
+        "sendMail": { "description": "async sendMail({ from, to, subject, text, html, attachments, meta }) => info" },
+        "provider": { "type": "string", "enum": ["smtp", "custom"] },
+        "host": { "type": "string", "maxLength": 255 },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "secure": { "type": "boolean", "description": "true 时直连 TLS（常见 465）；false 时明文连接并在服务器支持时 STARTTLS。" },
+        "user": { "type": "string", "maxLength": 255 },
+        "password": { "type": "string", "maxLength": 1024 },
+        "heloName": { "type": "string", "maxLength": 255 },
+        "starttls": { "type": "boolean", "description": "是否尝试 STARTTLS，默认 true。" },
+        "requireTls": { "type": "boolean", "description": "true 时服务器不支持 STARTTLS 即拒绝发信。" },
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 120000 },
+        "maxMessageBytes": { "type": "integer", "minimum": 1024, "maximum": 26214400 }
+      }
+    },
+    "imap": {
+      "type": "object",
+      "description": "收件适配器配置。provider=imap 使用内置 IMAP 客户端；也可注入 listMessages/getMessage/deleteMessage/getAttachment。未提供时收件接口返回 409 mail.imap_not_configured。",
+      "additionalProperties": true,
+      "properties": {
+        "listMessages": { "description": "async listMessages({ user, folder, limit, offset }) => { messages, total }" },
+        "getMessage": { "description": "async getMessage({ user, folder, id }) => message" },
+        "deleteMessage": { "description": "async deleteMessage({ user, folder, id }) => void" },
+        "getAttachment": { "description": "async getAttachment({ user, folder, messageId, attachmentId }) => { filename, contentType, contentBase64 }" },
+        "provider": { "type": "string", "enum": ["imap", "custom"] },
+        "host": { "type": "string", "maxLength": 255 },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "secure": { "type": "boolean" },
+        "user": { "type": "string", "maxLength": 255 },
+        "password": { "type": "string", "maxLength": 1024 },
+        "userFrom": { "type": "string", "enum": ["email", "username"], "description": "用当前登录用户的邮箱或用户名作为 IMAP 账号，密码仍取自本配置或部署注入的凭据解析器。" },
+        "starttls": { "type": "boolean" },
+        "allowInsecure": { "type": "boolean", "description": "允许在服务器不支持 STARTTLS 时继续明文连接（仅限本机或可信内网）。默认 false。" },
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 120000 },
+        "maxMessageBytes": { "type": "integer", "minimum": 65536, "maximum": 10485760 }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "验证码策略。默认值与方案 §7.5 一致：10 分钟窗口最多 5 次，验证码 10 分钟有效。",
+      "properties": {
+        "public": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否允许未登录请求验证码（用于注册前置流程）。默认关闭；写操作未认证仍返回 403。"
+        },
+        "windowMs": { "type": "integer", "minimum": 1000, "maximum": 86400000 },
+        "maxPerWindow": { "type": "integer", "minimum": 1, "maximum": 100 },
+        "ttlMs": { "type": "integer", "minimum": 1000, "maximum": 3600000 },
+        "maxAttempts": { "type": "integer", "minimum": 1, "maximum": 20 }
+      }
+    },
+    "attachments": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "附件下载与发信附件大小限制。",
+      "properties": {
+        "maxBytes": { "type": "integer", "minimum": 1024, "maximum": 52428800 }
+      }
+    }
+  }
+}

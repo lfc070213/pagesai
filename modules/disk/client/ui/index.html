@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PagesAI Disk</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>PagesAI Disk</h1>
+      <p class="muted">把本机选定的一个文件夹与部署者自己的网盘双向同步。</p>
+    </div>
+    <div class="status" id="statusPill">正在读取状态…</div>
+  </header>
+
+  <main>
+    <section class="card" id="pairCard">
+      <h2>连接与配对</h2>
+      <div class="grid">
+        <label>服务地址
+          <input id="serviceUrl" placeholder="https://disk.example.com" autocomplete="off" />
+        </label>
+        <label>本机同步目录
+          <input id="root" placeholder="~/PagesAI Disk" autocomplete="off" />
+        </label>
+        <label>设备名称
+          <input id="deviceName" placeholder="我的笔记本" autocomplete="off" />
+        </label>
+        <label>配对码
+          <input id="pairCode" placeholder="在网盘网页端生成，10 分钟内有效" autocomplete="off" />
+        </label>
+        <label id="campusRow" hidden>校园策略端点（仅北大版）
+          <input id="campusEndpoint" placeholder="https://campus.example.com" autocomplete="off" />
+        </label>
+      </div>
+      <p class="muted small">令牌保存在系统凭据库，设置文件不含令牌。配对码只能使用一次。</p>
+      <div class="actions">
+        <button id="pairButton" class="primary">配对并首次同步</button>
+        <button id="unpairButton" class="ghost" hidden>解除配对</button>
+      </div>
+    </section>
+
+    <section class="card" id="syncCard">
+      <h2>同步状态</h2>
+      <dl class="facts">
+        <div><dt>设备</dt><dd id="factDevice">—</dd></div>
+        <div><dt>制品策略</dt><dd id="factStrategy">—</dd></div>
+        <div><dt>同步目录</dt><dd id="factRoot">—</dd></div>
+        <div><dt>服务地址</dt><dd id="factService">—</dd></div>
+        <div><dt>游标</dt><dd id="factCursor">—</dd></div>
+        <div><dt>待重放操作</dt><dd id="factPending">—</dd></div>
+        <div><dt>上次同步</dt><dd id="factLastSync">—</dd></div>
+      </dl>
+      <div class="grid">
+        <label>自动同步间隔（分钟，0 为关闭）
+          <input id="intervalMinutes" type="number" min="0" max="1440" value="15" />
+        </label>
+        <label class="check"><input id="syncOnLaunch" type="checkbox" /> 启动时同步</label>
+        <label class="check"><input id="autoStart" type="checkbox" /> 开机自启动</label>
+      </div>
+      <div class="actions">
+        <button id="syncButton" class="primary" hidden>立即同步</button>
+        <button id="saveButton" class="ghost" hidden>保存设置</button>
+        <button id="updateButton" class="ghost">检查更新</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>记录</h2>
+      <pre id="log" class="log">尚未操作。</pre>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

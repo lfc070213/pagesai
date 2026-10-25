@@ -1,0 +1,359 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/config/config.schema.json",
+  "title": "PagesAI 部署配置（config.json）",
+  "description": "tools/init.js 生成、tools/* 读取的唯一部署配置。只保存路径、模块选择与策略，不保存任何秘密值：秘密材料只以引用形式登记（secrets.reference），由部署环境独立保护。数据根只在此显式登记一次，升级不得隐式改变。方案依据：§4.3、§5.2、§6.1、§9、§16.2。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "product",
+    "productVersion",
+    "deploymentId",
+    "createdAt",
+    "updatedAt",
+    "installRoot",
+    "dataRoot",
+    "domain",
+    "port",
+    "publicBaseUrl",
+    "modules",
+    "coreCompatibility",
+    "disk",
+    "registration",
+    "sessionTtlMs",
+    "storage",
+    "regions",
+    "database",
+    "secrets",
+    "glim"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "config.json 结构版本。结构发生不兼容变更时必须提升，并让旧工具拒绝继续。"
+    },
+    "product": {
+      "const": "pagesai",
+      "description": "产品标识，固定值，用于拒绝误读其他项目的配置。"
+    },
+    "productVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "生成该配置的公开版版本号。"
+    },
+    "deploymentId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "部署唯一标识（UUID）。初始化时生成，升级、备份、恢复都以此确认属于同一部署。"
+    },
+    "createdAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+      "description": "首次初始化时间（UTC ISO 8601）。"
+    },
+    "updatedAt": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$",
+      "description": "最近一次写入时间（UTC ISO 8601）。"
+    },
+    "installRoot": {
+      "type": "string",
+      "minLength": 1,
+      "description": "安装根目录（代码所在位置），只用于解析模块与秘密材料引用，不用于推导数据根。"
+    },
+    "dataRoot": {
+      "type": "string",
+      "minLength": 2,
+      "pattern": "^(/|[A-Za-z]:[\\\\/])",
+      "description": "数据根绝对路径。初始化后即为权威记录；变更必须显式确认，不得隐式复用旧根。"
+    },
+    "domain": {
+      "type": ["string", "null"],
+      "pattern": "^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$",
+      "description": "对外域名；null 表示仅本地入口（http://127.0.0.1:<port>）。示例值一律为占位域名。"
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535,
+      "description": "服务监听端口。"
+    },
+    "publicBaseUrl": {
+      "type": "string",
+      "pattern": "^https?://[^\\s/]+(/[^\\s]*)?$",
+      "description": "打印给使用者的访问地址；有域名时按 HTTPS 处理（TLS 由反向代理终结）。"
+    },
+    "modules": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["pages", "disk", "glim", "mail", "survey", "paper"]
+      },
+      "description": "本次部署安装的业务模块（公共核心不在其中）。空数组表示仅公共核心。"
+    },
+    "coreCompatibility": {
+      "type": "string",
+      "pattern": "^[\\^~<>= ]*[0-9]+\\.[0-9]+\\.[0-9]+.*$",
+      "description": "兼容的公共核心契约范围；不匹配时升级必须拒绝。"
+    },
+    "disk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["variant", "dataPlane", "pkuArchive"],
+      "description": "Disk 版本选择。通用版与北大版共用同一数据面（同一批 storage 键与同一套路径规则），差异只在编排预设与可选区域。",
+      "properties": {
+        "variant": {
+          "enum": ["generic", "pku"],
+          "description": "generic=通用版；pku=北大版。"
+        },
+        "dataPlane": {
+          "const": "shared",
+          "description": "固定为 shared：两版本共用数据面，切换版本不得移动数据。"
+        },
+        "pkuArchive": {
+          "type": "boolean",
+          "description": "是否登记北大归档区域（storage.disk.pkuRoot）。"
+        }
+      }
+    },
+    "registration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "enabled", "requireEmailVerification", "allowedEmailDomains"],
+      "description": "注册方式。email 方式必须已安装 Mail 模块（核心在启动时即校验，不等到用户注册才报错）。",
+      "properties": {
+        "mode": {
+          "enum": ["open", "email"],
+          "description": "open=用户名+密码直接注册；email=邮箱验证码注册。"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "是否允许公开注册。"
+        },
+        "requireEmailVerification": {
+          "type": "boolean",
+          "description": "必须与 mode 一致：email → true。"
+        },
+        "allowedEmailDomains": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9.-]+$"
+          },
+          "description": "邮箱注册允许的域名白名单；空数组表示不限制域名。"
+        }
+      }
+    },
+    "sessionTtlMs": {
+      "type": "integer",
+      "minimum": 300000,
+      "description": "会话有效期（毫秒），不得小于 5 分钟。"
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 2,
+        "pattern": "^(/|[A-Za-z]:[\\\\/])"
+      },
+      "description": "存储区域配置键 → 物理根绝对路径。初始化后即为权威记录；升级检测到差异必须拒绝并要求显式处理。"
+    },
+    "regions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["regionId", "module", "physicalRoot", "ownership", "allowedOperations", "disk"],
+        "description": "存储区域声明，字段与 contracts/storage-region.schema.json 一致；物理根经 storage 中的 configKey 解析，禁止硬编码个人路径。",
+        "properties": {
+          "regionId": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$"
+          },
+          "module": {
+            "enum": ["core", "pages", "disk", "glim", "mail", "survey", "paper"]
+          },
+          "physicalRoot": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["configKey", "allowImplicitChange"],
+            "properties": {
+              "configKey": {
+                "type": "string",
+                "pattern": "^[a-z][\\w.]*$"
+              },
+              "defaultSubpath": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]*$"
+              },
+              "allowImplicitChange": {
+                "type": "boolean",
+                "const": false
+              }
+            }
+          },
+          "ownership": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["rule"],
+            "properties": {
+              "rule": {
+                "enum": ["per-user", "global", "per-object"]
+              },
+              "ownerField": {
+                "type": "string",
+                "pattern": "^[a-zA-Z][\\w.]*$"
+              }
+            }
+          },
+          "allowedOperations": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "enum": ["read", "write", "delete", "rename", "mkdir"]
+            }
+          },
+          "disk": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["visible"],
+            "properties": {
+              "visible": {
+                "type": "boolean"
+              },
+              "syncable": {
+                "type": "boolean"
+              },
+              "readOnly": {
+                "type": "boolean"
+              },
+              "writableViaModuleAdapter": {
+                "type": "boolean"
+              }
+            }
+          },
+          "quota": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "basis": {
+                "enum": ["none", "logical-bytes", "physical-bytes", "file-count"]
+              },
+              "accounting": {
+                "enum": ["per-user", "per-object", "global"]
+              },
+              "dedupeByFileId": {
+                "type": "boolean"
+              }
+            }
+          },
+          "changeLog": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "required": {
+                "type": "boolean"
+              },
+              "contract": {
+                "const": "file-change.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["engine", "stateDir"],
+      "description": "正式身份、会话、挑战与控制记录的 MongoDB 配置。连接秘密只由部署环境注入；空库必须由迁移步骤显式登记 deploymentId，禁止运行时静默回落内存或 JSON。stateDir 仅保存运维快照与迁移台账。",
+      "properties": {
+        "engine": {
+          "const": "mongodb"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "description": "MongoDB 逻辑数据库名，默认 pagesai。"
+        },
+        "initialize": {
+          "type": "boolean",
+          "description": "是否允许迁移步骤显式登记空数据库；默认为 false，运行时不得自动登记未知空库。"
+        },
+        "stateDir": {
+          "type": "string",
+          "minLength": 2,
+          "pattern": "^(/|[A-Za-z]:[\\\\/])"
+        },
+        "snapshotNote": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        }
+      }
+    },
+    "secrets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "reference", "keys"],
+      "description": "秘密材料引用。只登记位置与键名，禁止出现秘密值；备份复制引用、不复制秘密正文。",
+      "properties": {
+        "mode": {
+          "enum": ["env-file", "env"]
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1,
+          "description": "env-file 时为相对 installRoot 的路径（或绝对路径）；env 时为环境变量名前缀说明。"
+        },
+        "keys": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "description": "需要由秘密材料提供的键名清单（不含值）。"
+        },
+        "note": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "moduleConfig": {
+      "type": "object",
+      "description": "可选的模块非秘密配置，键为模块 ID；模型只保存 baseUrl/model/key reference，秘密正文仍由 secrets 环境提供。",
+      "additionalProperties": { "type": "object" }
+    },
+    "glim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["connections"],
+      "description": "Glim 对各模块的可选连接状态。初始化时一律写入 unconfigured（占位），真实授权后由服务更新。",
+      "properties": {
+        "connections": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["module", "status"],
+            "properties": {
+              "module": {
+                "enum": ["pages", "disk", "mail", "survey", "paper"]
+              },
+              "status": {
+                "enum": ["unconfigured", "pending", "connected"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

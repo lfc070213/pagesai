@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PagesAI 网盘</title>
+  <link rel="stylesheet" href="/disk-app.css">
+</head>
+<body>
+  <main id="authView" class="auth-shell" hidden>
+    <section class="auth-card">
+      <p class="eyebrow">PAGESAI DISK</p><h1>单盘、统一修订、可恢复</h1>
+      <p class="muted">正式账号会话 · MongoDB 元数据 · ContentStore 文件修订</p>
+      <div class="tabs" role="tablist"><button id="loginTab" class="active" type="button">登录</button><button id="registerTab" type="button">注册</button></div>
+      <form id="authForm">
+        <label>用户名<input id="username" name="username" autocomplete="username" required minlength="3" maxlength="32"></label>
+        <label>密码<input id="password" name="password" type="password" autocomplete="current-password" required minlength="12"></label>
+        <button id="authSubmit" class="primary" type="submit">登录</button>
+      </form>
+      <p id="authMessage" class="message" role="alert"></p>
+    </section>
+  </main>
+
+  <section id="shareView" class="share-shell" hidden>
+    <div class="card share-card">
+      <p class="eyebrow">PAGESAI DISK · 公开分享</p>
+      <h1 id="shareName">加载中</h1>
+      <p id="shareMeta" class="muted"></p>
+      <p id="shareMessage" class="message" role="alert"></p>
+      <div class="actions"><a id="shareDownload" class="button primary" href="#" hidden>下载文件</a><a class="button" href="/disk">进入网盘</a></div>
+    </div>
+  </section>
+
+  <div id="appView" class="app-shell" hidden>
+    <header class="topbar"><div><strong>PagesAI 网盘</strong><span class="badge">单盘</span></div><div class="top-actions"><span id="currentUser"></span><a class="button" href="/pages">Pages</a><button id="logout" type="button">退出</button></div></header>
+    <div class="workspace">
+      <aside class="sidebar">
+        <section class="card quota-card">
+          <h2>配额</h2>
+          <p id="quotaText" class="quota-text">—</p>
+          <div class="bar"><span id="quotaBar"></span></div>
+          <dl class="meta-list">
+            <div><dt>区域</dt><dd id="regionName">disk.user-files</dd></div>
+            <div><dt>计量</dt><dd>逻辑字节，含软删</dd></div>
+            <div><dt>分块</dt><dd id="chunkInfo">—</dd></div>
+          </dl>
+        </section>
+        <section class="card upload-card">
+          <h2>上传</h2>
+          <label class="dropzone" id="dropzone">拖入文件或点击选择<input id="fileInput" type="file" multiple hidden></label>
+          <label class="check"><input id="includeDeleted" type="checkbox">显示已删除</label>
+          <p class="muted small">上传前在浏览器计算整文件 SHA-256；大文件需要相应内存。分块顺序写入，可从中断处继续。</p>
+          <div id="uploadProgress" class="progress" hidden><div class="bar"><span id="uploadBar"></span></div><p id="uploadText" class="small"></p><div class="actions"><button id="cancelUpload" type="button">取消上传</button><button id="retryUpload" type="button" hidden>继续上传</button></div></div>
+        </section>
+      </aside>
+
+      <main class="content">
+        <section class="card">
+          <div class="card-title"><h2>我的文件</h2><div class="actions"><button id="refreshFiles" type="button">刷新</button></div></div>
+          <p id="status" class="message" role="status"></p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>名称</th><th>大小</th><th>状态</th><th>修订</th><th>更新时间</th><th>操作</th></tr></thead>
+              <tbody id="fileRows"></tbody>
+            </table>
+          </div>
+          <p id="emptyFiles" class="empty" hidden>还没有文件。从左侧选择文件上传。</p>
+        </section>
+
+        <section class="card" id="detailCard" hidden>
+          <div class="card-title"><h2 id="detailName">文件详情</h2><div class="actions"><button id="closeDetail" type="button">关闭</button></div></div>
+          <dl class="meta-list">
+            <div><dt>文件 ID</dt><dd id="detailId" class="mono"></dd></div>
+            <div><dt>大小</dt><dd id="detailSize"></dd></div>
+            <div><dt>修订</dt><dd id="detailRevision"></dd></div>
+            <div><dt>SHA-256</dt><dd id="detailHash" class="mono break"></dd></div>
+            <div><dt>状态</dt><dd id="detailStatus"></dd></div>
+          </dl>
+          <div class="actions">
+            <a id="detailDownload" class="button primary" href="#">下载</a>
+            <button id="detailNewVersion" type="button">上传新版本</button>
+            <button id="detailDelete" type="button">删除</button>
+            <button id="detailRestore" type="button">恢复</button>
+          </div>
+          <h3>只读分享</h3>
+          <div class="actions"><button id="createShare" class="primary" type="button">创建 24 小时分享</button></div>
+          <p id="newShareLink" class="mono break" hidden></p>
+          <ul id="shareList" class="compact-list"></ul>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <input id="versionInput" type="file" hidden>
+  <script src="/disk-app.js" defer></script>
+</body>
+</html>

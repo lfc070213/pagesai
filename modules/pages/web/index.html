@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PagesAI 控制台</title>
+  <link rel="stylesheet" href="/pages-console.css">
+</head>
+<body>
+  <main id="authView" class="auth-shell">
+    <section class="auth-card">
+      <p class="eyebrow">PAGESAI</p><h1>创建、预览并发布你的网站</h1>
+      <p class="muted">正式账号会话 · Mongo 持久化 · 统一文件修订</p>
+      <div class="tabs" role="tablist"><button id="loginTab" class="active" type="button">登录</button><button id="registerTab" type="button">注册</button></div>
+      <form id="authForm">
+        <label>用户名<input id="username" name="username" autocomplete="username" required minlength="3" maxlength="32"></label>
+        <label>密码<input id="password" name="password" type="password" autocomplete="current-password" required minlength="12"></label>
+        <button id="authSubmit" class="primary" type="submit">登录</button>
+      </form>
+      <p id="authMessage" class="message" role="alert"></p>
+    </section>
+  </main>
+
+  <div id="appView" class="app-shell" hidden>
+    <header class="topbar"><div><strong>PagesAI</strong><span class="badge">公开版</span></div><div class="top-actions"><span id="currentUser"></span><button id="adminOpen" type="button" hidden>模型配置</button><button id="logout" type="button">退出</button></div></header>
+    <div class="workspace">
+      <aside class="sidebar">
+        <form id="siteCreate" class="stack"><label>新站点<input id="siteName" required maxlength="80" placeholder="我的网站"></label><button class="primary" type="submit">创建站点</button></form>
+        <nav id="siteList" aria-label="站点列表"></nav>
+      </aside>
+      <main id="emptyState" class="empty"><h2>选择或创建一个站点</h2><p>所有生成和手工修改先进入工作区，发布后才公开。</p></main>
+      <main id="siteView" hidden>
+        <section class="site-heading"><div><p class="eyebrow">当前站点</p><h1 id="siteTitle"></h1><p id="siteMeta" class="muted"></p></div><div class="actions"><button id="refreshSite" type="button">刷新</button><button id="publish" class="primary" type="button">发布</button></div></section>
+        <p id="status" class="message" role="status"></p>
+        <div class="grid">
+          <section class="card agent-card"><div class="card-title"><h2>任务输入与过程</h2><span id="taskState" class="badge">空闲</span></div>
+            <label>模型<select id="modelSelect"></select></label>
+            <p id="testModelNotice" class="warning" hidden>当前是明确仅测试的确定性本地模型，不代表外部模型验收。</p>
+            <form id="taskForm" class="stack"><label>想创建或修改什么？<textarea id="prompt" rows="5" required placeholder="例如：创建一个浅色产品介绍页"></textarea></label><div class="actions"><button class="primary" type="submit">开始任务</button><button id="cancelTask" type="button" disabled>停止</button></div></form>
+            <div id="taskEvents" class="events" aria-live="polite"></div>
+            <form id="materialForm" class="upload-row"><label>上传任务材料<input id="materialInput" type="file" multiple></label><button type="submit">上传</button></form><ul id="materialList" class="compact-list"></ul>
+          </section>
+          <section class="card preview-card"><div class="card-title"><h2>工作区预览</h2><button id="refreshPreview" type="button">刷新预览</button></div><p class="muted">预览读取工作修订；iframe 不携带管理会话。</p><iframe id="preview" title="工作区预览" credentialless sandbox="allow-scripts"></iframe><a id="publicLink" href="#" target="_blank" rel="noopener noreferrer" hidden>打开已发布站点</a></section>
+          <section class="card files-card"><div class="card-title"><h2>文件管理</h2><button id="newFile" type="button">新建文件</button></div><div class="file-layout"><ul id="fileList" class="file-list"></ul><div class="editor"><label>路径<input id="filePath" placeholder="index.html"></label><label>内容<textarea id="fileContent" rows="14" spellcheck="false"></textarea></label><div class="actions"><button id="saveFile" class="primary" type="button">保存</button><button id="deleteFile" type="button">删除</button></div></div></div></section>
+          <section class="card"><div class="card-title"><h2>版本恢复</h2><button id="loadVersions" type="button">刷新版本</button></div><label>发布版本<select id="versionSelect"></select></label><button id="rollback" type="button">恢复到所选版本</button><p class="muted">恢复同时更新工作区与公开指针，不删除其他修订。</p></section>
+          <section class="card backend-card"><div class="card-title"><h2>租户后端</h2><span id="backendState" class="badge">未部署</span></div><p class="muted">每站点独立子进程与 Mongo 数据库命名空间。当前不是容器安全沙盒。</p><label>server.js<textarea id="backendSource" rows="10" spellcheck="false">const http = require('node:http');
+const server = http.createServer((req, res) => {
+  res.setHeader('content-type', 'application/json; charset=utf-8');
+  res.end(JSON.stringify({ ok: true, path: req.url, database: process.env.DATABASE_URL.split('/').pop(), forwardedCookie: req.headers.cookie || null }));
+});
+server.listen(Number(process.env.PORT), '127.0.0.1');</textarea></label><div class="actions"><button id="deployBackend" class="primary" type="button">部署/更新</button><button id="stopBackend" type="button">停止</button><button id="startBackend" type="button">恢复</button></div><p id="backendRoute" class="mono"></p></section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="adminDialog"><form method="dialog" class="dialog-heading"><h2>管理员模型配置</h2><button aria-label="关闭">关闭</button></form><p class="muted">只保存 baseUrl、model 与 key reference。密钥正文只从部署环境解析。</p><div id="adminModels"></div><form id="modelForm" class="stack"><h3 id="modelFormTitle">新增模型</h3><input id="modelOriginalId" type="hidden"><label>ID<input id="modelId" required pattern="[a-z0-9][a-z0-9._-]*"></label><label>类型<select id="modelKind"><option value="openai-compatible">OpenAI 兼容</option><option value="deterministic-test">确定性本地模型（仅测试）</option></select></label><label>Base URL<input id="modelBaseUrl" placeholder="https://provider.example/v1"></label><label>Model<input id="modelName"></label><label>Key reference<input id="modelKeyRef" placeholder="env:PAGESAI_MODEL_KEY"></label><label class="check"><input id="modelEnabled" type="checkbox" checked>启用</label><div class="actions"><button class="primary" type="submit">保存</button><button id="modelReset" type="button">清空</button></div></form></dialog>
+  <script src="/pages-console.js" defer></script>
+</body>
+</html>

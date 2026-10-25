@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/contracts/storage-region.schema.json",
+  "title": "PagesAI 存储区域契约（storage region）",
+  "description": "在初始化时为各模块登记物理存储根。物理根只供服务端使用；浏览器与 Glim 不接受任意宿主路径。安装/卸载 Disk 不改变任何区域的数据位置。方案依据：§6.1、§6.2。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["regionId", "module", "physicalRoot", "ownership", "allowedOperations", "disk"],
+  "properties": {
+    "regionId": {
+      "type": "string",
+      "description": "稳定区域 ID，形如 <module>.<area>。发布后不得改变含义。",
+      "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$"
+    },
+    "module": {
+      "type": "string",
+      "description": "所属模块。",
+      "enum": ["core", "pages", "disk", "glim", "mail", "survey", "paper"]
+    },
+    "physicalRoot": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "物理根只通过配置解析得到，不硬编码个人路径。源码路径变化不得推导出数据路径变化。",
+      "required": ["configKey"],
+      "properties": {
+        "configKey": {
+          "type": "string",
+          "description": "解析物理根的配置键（如 storage.pages.root）。初始化后该键的值即为权威记录。",
+          "pattern": "^[a-z][\\w.]*$"
+        },
+        "defaultSubpath": {
+          "type": "string",
+          "description": "新部署时统一父目录下的默认子目录名；仅用于新部署，不得用于判定既有数据已消失。",
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "allowImplicitChange": {
+          "type": "boolean",
+          "description": "必须为 false：初始化与升级拒绝未经确认的隐式数据根变更。",
+          "const": false
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "所有权规则；统一用户 ID 作为所有权依据。",
+      "required": ["rule"],
+      "properties": {
+        "rule": { "type": "string", "enum": ["per-user", "global", "per-object"] },
+        "ownerField": {
+          "type": "string",
+          "description": "per-user/per-object 时的所有者字段名。",
+          "pattern": "^[a-zA-Z][\\w.]*$"
+        }
+      }
+    },
+    "allowedOperations": {
+      "type": "array",
+      "description": "该区域允许的操作集合。未列出的操作必须被服务端拒绝。",
+      "items": { "type": "string", "enum": ["read", "write", "delete", "rename", "mkdir"] },
+      "uniqueItems": true,
+      "minItems": 1
+    },
+    "disk": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "区域在 Disk 授权视图中的暴露方式。Disk 是授权视图，不自行扫描数据根。",
+      "required": ["visible"],
+      "properties": {
+        "visible": {
+          "type": "boolean",
+          "description": "false 用于 Maildir、索引、数据库、缓存、秘密配置与内部任务文件。"
+        },
+        "syncable": {
+          "type": "boolean",
+          "description": "是否允许进入客户端双向同步范围。"
+        },
+        "readOnly": {
+          "type": "boolean",
+          "description": "只读暴露：客户端可读不可写，界面必须明确同步方向。"
+        },
+        "writableViaModuleAdapter": {
+          "type": "boolean",
+          "description": "true 时写入必须经模块文件适配器执行（关联业务对象的区域），不能走普通文件数据面。",
+          "default": false
+        }
+      }
+    },
+    "quota": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "配额口径。模块配额与物理总量分别解释；同一物理文件在多个入口出现不得重复计入总用量。",
+      "properties": {
+        "basis": { "type": "string", "enum": ["none", "logical-bytes", "physical-bytes", "file-count"] },
+        "accounting": { "type": "string", "enum": ["per-user", "per-object", "global"] },
+        "dedupeByFileId": {
+          "type": "boolean",
+          "description": "同一稳定文件 ID 在多个入口出现时只计一次；必须为 true 的部署需要稳定文件标识。",
+          "default": true
+        }
+      }
+    },
+    "changeLog": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "该区域的文件变更必须发布到统一变更记录，供同步与对账使用；文件系统监听只作加速，不是唯一正确性来源。",
+      "properties": {
+        "required": { "type": "boolean", "default": true },
+        "contract": { "type": "string", "const": "file-change.schema.json" }
+      }
+    }
+  }
+}

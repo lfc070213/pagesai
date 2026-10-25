@@ -1,0 +1,20 @@
+{
+  "name": "pagesai-public-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PagesAI public core runtime",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test tests/contracts/*.test.js tests/integration/*.test.js",
+    "test:mongo": "PAGESAI_MONGO_TEST=1 node --test tests/integration/identity-mongodb.test.js tests/integration/storage-mongodb.test.js tests/integration/pages-clean-install.test.js tests/integration/disk-clean-install.test.js tests/integration/deploy-acceptance.test.js modules/pages/tests/repository-mongo.test.js modules/disk/tests/platform-mongo.test.js modules/disk/tests/platform-sync-mongo.test.js"
+  },
+  "dependencies": {
+    "mongodb": "^6.20.0"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.4.2"
+  },
+  "license": "MIT"
+}

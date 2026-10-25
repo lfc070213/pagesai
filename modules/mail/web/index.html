@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PagesAI 邮件</title>
+  <link rel="stylesheet" href="/mail-app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">M</span>
+      <div>
+        <h1>邮件</h1>
+        <p id="account" class="muted">正在读取账号…</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button id="refresh" type="button" class="secondary">刷新</button>
+      <button id="compose-open" type="button">写邮件</button>
+    </div>
+  </header>
+
+  <p id="notice" class="notice" hidden></p>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <label class="field">
+        <span>文件夹</span>
+        <select id="folder">
+          <option value="INBOX">收件箱</option>
+          <option value="Sent">已发送</option>
+          <option value="Drafts">草稿</option>
+          <option value="Archive">归档</option>
+          <option value="Junk">垃圾邮件</option>
+          <option value="Trash">已删除</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>自定义文件夹</span>
+        <input id="custom-folder" type="text" maxlength="64" placeholder="例如 Work">
+      </label>
+      <button id="apply-folder" type="button" class="secondary">打开文件夹</button>
+      <dl class="status">
+        <dt>发信</dt><dd id="smtp-status">—</dd>
+        <dt>收信</dt><dd id="imap-status">—</dd>
+        <dt>用户发信</dt><dd id="send-status">—</dd>
+      </dl>
+    </aside>
+
+    <section class="list-pane" aria-label="邮件列表">
+      <div class="list-head">
+        <span id="list-title">收件箱</span>
+        <span id="list-count" class="muted"></span>
+      </div>
+      <ul id="message-list" class="message-list"></ul>
+      <div class="pager">
+        <button id="newer" type="button" class="secondary">较新</button>
+        <button id="older" type="button" class="secondary">较早</button>
+      </div>
+    </section>
+
+    <section class="reader" aria-live="polite">
+      <div id="reader-empty" class="empty">选择一封邮件查看内容</div>
+      <article id="reader-body" hidden>
+        <h2 id="message-subject"></h2>
+        <p id="message-meta" class="muted"></p>
+        <div id="message-html" class="message-html"></div>
+        <pre id="message-text" class="message-text" hidden></pre>
+        <div id="attachment-box" class="attachments" hidden>
+          <h3>附件</h3>
+          <ul id="attachment-list"></ul>
+        </div>
+        <div class="reader-actions">
+          <button id="delete-message" type="button" class="danger">删除</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="compose" class="overlay" hidden>
+    <form id="compose-form" class="compose-form">
+      <h2>写邮件</h2>
+      <label class="field"><span>收件人</span><input id="compose-to" type="text" required placeholder="name@example.com，多个地址用逗号分隔"></label>
+      <label class="field"><span>主题</span><input id="compose-subject" type="text" maxlength="500"></label>
+      <label class="field"><span>纯文本正文</span><textarea id="compose-text" rows="8"></textarea></label>
+      <label class="field"><span>HTML 正文（可选，服务端会净化）</span><textarea id="compose-html" rows="5"></textarea></label>
+      <label class="field"><span>附件（可多选）</span><input id="compose-files" type="file" multiple></label>
+      <p id="compose-error" class="error" hidden></p>
+      <div class="compose-actions">
+        <button id="compose-cancel" type="button" class="secondary">取消</button>
+        <button id="compose-send" type="submit">发送</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/mail-app.js"></script>
+</body>
+</html>

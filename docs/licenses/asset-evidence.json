@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "path": "modules/disk/client/src-tauri/icons/icon.png",
+      "sha256": "bddd166f357b7d117526b02f66dd42825bccb362676930aba45f1d6a702900fd",
+      "license": "MIT",
+      "basis": "Project icon introduced with first-party client in bd34310; owner selected MIT for project source and client on 2026-10-25."
+    }
+  ]
+}

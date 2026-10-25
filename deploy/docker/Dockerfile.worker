@@ -1,0 +1,40 @@
+# PagesAI 执行 worker 镜像（Pages 任务 worker / 租户后端的运行资产）
+#
+# 构建（上下文必须是公开版根目录）：
+#   docker build -f deploy/docker/Dockerfile.worker -t pagesai/worker:local .
+#
+# 重要边界：
+#   - 当前 Pages 任务 worker 是由 app 进程通过 fork + IPC 启动的子进程，
+#     不是独立监听端口的服务；因此本镜像不是 Compose 长驻服务，也不发布端口。
+#   - 入口 deploy/docker/entrypoints/worker.js 支持两种模式：
+#       * 被宿主 fork 且存在 IPC 通道：加载 modules/pages/worker/task-worker.js；
+#       * --check：只校验 worker 依赖、清单与 Node 版本，供 HEALTHCHECK/CI 使用。
+#   - 沙盒隔离、资源限制与逃逸防护仍未完成（C11），本镜像不声明这些能力。
+#
+# 本文件不写入任何账号、口令、域名或镜像 digest。
+
+FROM node:24-bookworm-slim
+
+ENV NODE_ENV=production \
+    PAGESAI_INSTALL_ROOT=/opt/pagesai \
+    PAGESAI_DATA_ROOT=/data
+
+RUN groupadd --gid 10001 pagesai \
+ && useradd --uid 10001 --gid pagesai --home-dir /home/pagesai --create-home --shell /usr/sbin/nologin pagesai
+
+WORKDIR /opt/pagesai
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund \
+ && npm cache clean --force
+
+COPY --chown=pagesai:pagesai . .
+RUN mkdir -p /data \
+ && chown -R pagesai:pagesai /data
+
+USER pagesai
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD ["node", "deploy/docker/entrypoints/worker.js", "--check"]
+
+CMD ["node", "deploy/docker/entrypoints/worker.js"]

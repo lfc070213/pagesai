@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/modules/survey/config.schema.json",
+  "title": "Survey 模块配置",
+  "description": "Survey 不依赖 MongoDB、SMTP、Disk 或任何外部适配器。dataFile 缺省时使用纯内存存储；文件题附件写入 attachmentsDir，未给出时默认为 dataFile 同级的 attachments 目录。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataFile": {
+      "description": "JsonStore 数据文件路径；缺省或 null 表示纯内存。相对路径由运行进程工作目录解析。",
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "attachmentsDir": {
+      "description": "文件题附件的物理根目录（对应存储区域 survey.attachments）。缺省时使用 dataFile 同级的 attachments；未配置 dataFile 时为纯内存且附件接口返回 409。",
+      "type": "string",
+      "minLength": 1
+    },
+    "maxAttachmentBytes": {
+      "description": "单个文件题附件允许的最大字节数。",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 104857600,
+      "default": 10485760
+    }
+  }
+}

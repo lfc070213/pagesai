@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Glim 智能体</title>
+  <link rel="stylesheet" href="/glim-app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Glim</h1>
+      <p class="muted" id="status">正在连接…</p>
+    </div>
+    <nav id="tabs" class="tabs" aria-label="功能切换">
+      <button data-tab="chat" class="active">对话</button>
+      <button data-tab="connections">连接</button>
+      <button data-tab="tasks">任务</button>
+      <button data-tab="workspace">工作区</button>
+      <button data-tab="memory">记忆</button>
+      <button data-tab="audit">审计</button>
+    </nav>
+  </header>
+
+  <main>
+    <section data-panel="chat" class="panel active">
+      <aside class="sidebar">
+        <div class="row">
+          <button id="new-session" class="primary">新建会话</button>
+          <button id="refresh-sessions" class="ghost" title="刷新">刷新</button>
+        </div>
+        <ul id="session-list" class="list"></ul>
+      </aside>
+      <div class="content">
+        <div id="session-title" class="section-title">未选择会话</div>
+        <div id="messages" class="messages" aria-live="polite"></div>
+        <form id="chat-form" class="composer">
+          <textarea id="chat-input" rows="3" placeholder="输入消息；Enter 发送，Shift+Enter 换行"></textarea>
+          <button type="submit" class="primary" id="send-button">发送</button>
+        </form>
+        <p id="chat-error" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <section data-panel="connections" class="panel">
+      <div class="content wide">
+        <div class="row between">
+          <div>
+            <div class="section-title">模块发现</div>
+            <p class="muted">只读取部署提供的模块目录；发现本身不授予任何数据权限。</p>
+          </div>
+          <button id="refresh-discovery" class="ghost">刷新</button>
+        </div>
+        <div id="discovery" class="cards"></div>
+        <div class="section-title">已登记连接</div>
+        <ul id="connector-list" class="list"></ul>
+        <div class="section-title">可用工具</div>
+        <ul id="tool-list" class="list"></ul>
+        <p id="connections-error" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <section data-panel="tasks" class="panel">
+      <div class="content wide">
+        <form id="task-form" class="inline">
+          <input id="task-prompt" type="text" placeholder="任务指令，例如：读取工作区 report.md 并总结" maxlength="8000">
+          <select id="task-session"><option value="">自动创建会话</option></select>
+          <button type="submit" class="primary">创建任务</button>
+        </form>
+        <p class="muted">任务可停止与恢复；进程重启后如实标记为“已中断”。</p>
+        <div id="task-list" class="tasks"></div>
+        <p id="tasks-error" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <section data-panel="workspace" class="panel">
+      <aside class="sidebar">
+        <div class="row">
+          <button id="refresh-workspace" class="ghost">刷新</button>
+          <button id="new-file" class="primary">新建文件</button>
+        </div>
+        <ul id="workspace-list" class="list"></ul>
+        <p id="workspace-quota" class="muted"></p>
+      </aside>
+      <div class="content">
+        <div class="row between">
+          <input id="workspace-path" type="text" placeholder="相对路径，例如 notes/todo.md">
+          <button id="save-file" class="primary">保存</button>
+          <button id="delete-file" class="danger ghost">删除</button>
+        </div>
+        <textarea id="workspace-content" class="editor" rows="20" placeholder="文件内容"></textarea>
+        <p id="workspace-error" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <section data-panel="memory" class="panel">
+      <div class="content">
+        <div class="section-title">长期记忆</div>
+        <p class="muted">每用户一份，会作为背景提供给模型；长度上限由部署配置决定。</p>
+        <textarea id="memory-content" class="editor" rows="14"></textarea>
+        <div class="row">
+          <button id="save-memory" class="primary">保存</button>
+          <span id="memory-meta" class="muted"></span>
+        </div>
+        <p id="memory-error" class="error" role="alert"></p>
+      </div>
+    </section>
+
+    <section data-panel="audit" class="panel">
+      <div class="content wide">
+        <div class="row between">
+          <div class="section-title">工具审计</div>
+          <button id="refresh-audit" class="ghost">刷新</button>
+        </div>
+        <p class="muted">只记录工具名、来源、结果与耗时，不记录参数内容或令牌。</p>
+        <table class="table">
+          <thead><tr><th>时间</th><th>工具</th><th>来源</th><th>结果</th><th>耗时</th></tr></thead>
+          <tbody id="audit-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/glim-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{
+  "id": "mail",
+  "version": "0.2.0",
+  "coreCompatibility": "^1.0.0",
+  "requires": {
+    "infrastructure": ["smtp", "imap"],
+    "modules": []
+  },
+  "activation": {
+    "serverEntry": "server/index.js",
+    "routePrefix": "/api/mail",
+    "adminContribution": "server/admin.js"
+  },
+  "config": {
+    "schema": "config.schema.json",
+    "secrets": ["/transport/password", "/imap/password"]
+  },
+  "data": {
+    "namespace": "mail",
+    "regions": ["mail.mailbox"]
+  },
+  "lifecycle": {
+    "start": "start",
+    "stop": "stop",
+    "health": "health",
+    "taskStopRules": {
+      "drainTimeoutMs": 2000,
+      "onStopFailure": "keep-installed"
+    }
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "mail_list_messages",
+        "access": "read",
+        "implemented": true,
+        "externalEffect": false
+      },
+      {
+        "name": "mail_read_message",
+        "access": "read",
+        "implemented": true,
+        "externalEffect": false
+      },
+      {
+        "name": "mail_send",
+        "access": "write",
+        "implemented": true,
+        "externalEffect": true
+      },
+      {
+        "name": "mail_delete_message",
+        "access": "write",
+        "implemented": true,
+        "externalEffect": true
+      }
+    ]
+  }
+}

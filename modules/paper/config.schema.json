@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/modules/paper/config.schema.json",
+  "title": "Paper 模块配置",
+  "description": "论文上传/阅读/翻译/问答的最小闭环配置。dataFile 未给时 JsonStore 纯内存运行；uploadsDir 未给时原件也不落盘（仅提取结果进内存）。适配器的函数式注入只用于进程内嵌入与测试，JSON 部署配置请使用 endpoint 形式。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataFile": {
+      "type": "string",
+      "minLength": 1,
+      "description": "JsonStore 数据文件路径；不给则纯内存，进程退出即丢失。"
+    },
+    "uploadsDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "上传原件目录（对应存储区域 paper.uploads）。不给时：有 dataFile 则用其同级 uploads/，否则纯内存且不落原件。"
+    },
+    "maxUploadBytes": {
+      "type": "integer",
+      "minimum": 1024,
+      "maximum": 134217728,
+      "default": 33554432,
+      "description": "单个上传解码后的最大字节数，默认 32 MiB。"
+    },
+    "defaultTargetLang": {
+      "type": "string",
+      "pattern": "^[A-Za-z-]{2,32}$",
+      "default": "zh",
+      "description": "翻译默认目标语言。"
+    },
+    "qaTopK": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 6,
+      "description": "问答检索默认引用的句子数上限。"
+    },
+    "translateBatchSize": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20,
+      "description": "单次翻译请求包含的最大句子数。"
+    },
+    "translateAdapter": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "翻译适配器。endpoint 形式：POST {endpoint}，请求体 {segments,targetLang,model}，响应 {translations:[string|{i,text}]}。也可在进程内注入 {translate: async (input) => [...]} 或函数。",
+      "properties": {
+        "endpoint": { "type": "string", "minLength": 1 },
+        "apiKey": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 600000 }
+      }
+    },
+    "qaAdapter": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "问答适配器。endpoint 形式：POST {endpoint}，请求体 {question,segments,model}，响应 {answer,citations:[sid]}。也可在进程内注入 {ask: async (input) => ({answer, citations})} 或函数。",
+      "properties": {
+        "endpoint": { "type": "string", "minLength": 1 },
+        "apiKey": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 600000 }
+      }
+    },
+    "searchAdapter": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "可选检索适配器。未配置或不可用时问答必须明确降级为本地关键词检索，不得伪造检索结果。",
+      "properties": {
+        "endpoint": { "type": "string", "minLength": 1 },
+        "apiKey": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "timeoutMs": { "type": "integer", "minimum": 1000, "maximum": 600000 }
+      }
+    }
+  }
+}

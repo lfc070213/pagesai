@@ -1,0 +1,71 @@
+{
+  "id": "paper",
+  "version": "0.2.0",
+  "coreCompatibility": "^1.0.0",
+  "requires": {
+    "infrastructure": []
+  },
+  "activation": {
+    "serverEntry": "server/index.js",
+    "routePrefix": "/api/paper",
+    "adminContribution": "server/admin.js"
+  },
+  "config": {
+    "schema": "config.schema.json",
+    "secrets": [
+      "/translateAdapter/apiKey",
+      "/qaAdapter/apiKey",
+      "/searchAdapter/apiKey"
+    ]
+  },
+  "data": {
+    "namespace": "paper",
+    "regions": [
+      "paper.uploads"
+    ]
+  },
+  "lifecycle": {
+    "start": "start",
+    "stop": "stop",
+    "health": "health",
+    "taskStopRules": {
+      "drainTimeoutMs": 10000,
+      "onStopFailure": "keep-installed"
+    }
+  },
+  "capabilities": {
+    "tools": [
+      {
+        "name": "paper_list_docs",
+        "access": "read",
+        "implemented": true
+      },
+      {
+        "name": "paper_read_doc",
+        "access": "read",
+        "implemented": true
+      },
+      {
+        "name": "paper_upload_doc",
+        "access": "write",
+        "implemented": true
+      },
+      {
+        "name": "paper_translate_doc",
+        "access": "write",
+        "implemented": true
+      },
+      {
+        "name": "paper_ask_doc",
+        "access": "read",
+        "implemented": true
+      },
+      {
+        "name": "paper_delete_doc",
+        "access": "write",
+        "implemented": true,
+        "externalEffect": true
+      }
+    ]
+  }
+}

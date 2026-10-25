@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PagesAI 问卷</title>
+  <link rel="stylesheet" href="/survey-app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">S</span>
+      <div>
+        <h1 id="page-title">问卷</h1>
+        <p id="account" class="muted">正在读取账号…</p>
+      </div>
+    </div>
+    <div class="toolbar">
+      <button id="refresh" type="button" class="secondary">刷新</button>
+      <button id="create-survey" type="button">新建问卷</button>
+    </div>
+  </header>
+
+  <p id="notice" class="notice" hidden></p>
+
+  <main id="console" class="layout">
+    <aside class="sidebar">
+      <label class="field">
+        <span>状态</span>
+        <select id="status-filter">
+          <option value="">全部</option>
+          <option value="draft">草稿</option>
+          <option value="published">已发布</option>
+          <option value="closed">已关闭</option>
+        </select>
+      </label>
+      <ul id="survey-list" class="survey-list"></ul>
+      <p id="list-empty" class="empty" hidden>还没有问卷，点击“新建问卷”开始。</p>
+    </aside>
+
+    <section id="workspace" class="workspace" aria-live="polite">
+      <div id="view-empty" class="empty-panel">
+        <h2>选择或新建一份问卷</h2>
+        <p class="muted">编辑草稿、预览、发布公开链接、查看答卷与统计，全部在同源完成。</p>
+      </div>
+
+      <div id="view-editor" class="view" hidden>
+        <div class="view-head">
+          <div>
+            <h2 id="editor-heading">编辑问卷</h2>
+            <p id="editor-meta" class="muted"></p>
+          </div>
+          <div class="actions">
+            <button id="preview-survey" type="button" class="secondary">预览</button>
+            <button id="save-survey" type="button">保存草稿</button>
+          </div>
+        </div>
+
+        <div id="publish-box" class="publish-box" hidden>
+          <p id="publish-text" class="muted"></p>
+          <div class="link-row">
+            <input id="public-link" type="text" readonly>
+            <button id="copy-link" type="button" class="secondary">复制链接</button>
+          </div>
+        </div>
+
+        <label class="field"><span>问卷标题</span><input id="survey-title" type="text" maxlength="500"></label>
+        <label class="field"><span>问卷描述</span><textarea id="survey-description" rows="3" maxlength="5000"></textarea></label>
+
+        <div class="questions-head">
+          <h3>题目</h3>
+          <div class="add-row">
+            <button type="button" class="secondary" data-add="single">+ 单选</button>
+            <button type="button" class="secondary" data-add="multiple">+ 多选</button>
+            <button type="button" class="secondary" data-add="text">+ 文本</button>
+            <button type="button" class="secondary" data-add="file">+ 文件</button>
+          </div>
+        </div>
+        <div id="questions"></div>
+
+        <div class="editor-footer">
+          <button id="open-results" type="button" class="secondary">答卷与统计</button>
+          <button id="publish-survey" type="button">发布</button>
+          <button id="close-survey" type="button" class="danger">关闭问卷</button>
+        </div>
+      </div>
+
+      <div id="view-results" class="view" hidden>
+        <div class="view-head">
+          <div>
+            <h2>答卷与统计</h2>
+            <p id="results-meta" class="muted"></p>
+          </div>
+          <div class="actions">
+            <button id="export-csv" type="button" class="secondary">导出 CSV</button>
+            <button id="back-editor" type="button" class="secondary">返回编辑</button>
+          </div>
+        </div>
+        <div class="tabs" role="tablist">
+          <button id="tab-stats" type="button" class="tab active" role="tab">统计</button>
+          <button id="tab-responses" type="button" class="tab" role="tab">答卷</button>
+        </div>
+        <section id="stats-pane" class="tab-pane"></section>
+        <section id="responses-pane" class="tab-pane" hidden></section>
+      </div>
+    </section>
+  </main>
+
+  <div id="fill-root" class="fill-root" hidden>
+    <div class="fill-card">
+      <h1 id="fill-title">问卷</h1>
+      <p id="fill-description" class="muted"></p>
+      <p id="fill-status" class="fill-status" hidden></p>
+      <form id="fill-form"></form>
+      <p id="fill-error" class="error" hidden></p>
+      <div class="fill-actions">
+        <button id="fill-submit" type="submit" form="fill-form">提交</button>
+      </div>
+      <div id="fill-done" class="fill-done" hidden>
+        <h2>已提交</h2>
+        <p class="muted">感谢填写。答卷已保存。</p>
+        <button id="fill-again" type="button" class="secondary">再填一份</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="preview" class="overlay" hidden>
+    <div class="preview-card">
+      <div class="preview-head">
+        <h2 id="preview-title">预览</h2>
+        <button id="preview-close" type="button" class="secondary">关闭</button>
+      </div>
+      <p id="preview-description" class="muted"></p>
+      <div id="preview-body" class="preview-body"></div>
+    </div>
+  </div>
+
+  <script src="/survey-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+# PagesAI 部署预设：paper-disk.yml（由 deploy/presets/model.js 生成，请勿手工编辑）
+# 模块：disk、paper
+# Disk 版本：通用版（generic）；注册方式：open
+# 运行单元：gateway（唯一对外入口）+ app（Node 核心 + 已安装模块）+ mongo（身份与元数据）
+# 说明：Glim 与 Disk 是 app 内的 Node 模块，不是独立 Python 服务；也不存在独立 runner 服务。
+#       app 不发布宿主机端口，所有外部请求经 gateway 流式转发。
+#
+# 首次初始化（写入 /data/config.json，使用同一份模块列表与 Disk/注册选择）：
+#   docker compose -f deploy/presets/paper-disk.yml --profile setup run --rm init
+#
+# 秘密只从当前 shell 注入，不写入仓库或镜像：
+#   export PAGESAI_BOOTSTRAP_TOKEN="$(node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))")"
+#   export PAGESAI_MONGO_PASSWORD="$(node -e "console.log(require('node:crypto').randomBytes(24).toString('hex'))")"
+#
+# 构建与启动：docker compose -f deploy/presets/paper-disk.yml up -d --build
+# 健康检查：GET /healthz（存活）与 GET /readyz（核心与模块就绪），经 gateway 访问
+# 数据卷：data → /data；mongo-db → /data/db。两卷都由 Docker 命名卷管理。
+#
+name: "pagesai"
+services:
+  gateway:
+    image: "pagesai/gateway:local"
+    build:
+      context: "../.."
+      dockerfile: "deploy/docker/Dockerfile.gateway"
+    restart: "unless-stopped"
+    environment:
+      PAGESAI_GATEWAY_PORT: "8080"
+      PAGESAI_GATEWAY_HOST: "0.0.0.0"
+      PAGESAI_GATEWAY_UPSTREAM: "http://app:8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      app:
+        condition: "service_healthy"
+    healthcheck:
+      test:
+        - "CMD"
+        - "node"
+        - "deploy/docker/gateway-healthcheck.js"
+      interval: "15s"
+      timeout: "5s"
+      retries: 5
+      start_period: "20s"
+  app:
+    image: "pagesai/app:local"
+    build:
+      context: "../.."
+      dockerfile: "deploy/docker/Dockerfile.app"
+    restart: "unless-stopped"
+    environment:
+      PAGESAI_CONFIG: "/data/config.json"
+      PAGESAI_INSTALL_ROOT: "/opt/pagesai"
+      PAGESAI_DATA_ROOT: "/data"
+      PAGESAI_HOST: "0.0.0.0"
+      PAGESAI_PORT: "8080"
+      PAGESAI_MODULES: "disk,paper"
+      PAGESAI_MONGO_HOST: "mongo"
+      PAGESAI_MONGO_PORT: "27017"
+      PAGESAI_MONGO_USER: "${PAGESAI_MONGO_USER:-pagesai}"
+      PAGESAI_MONGO_PASSWORD: "${PAGESAI_MONGO_PASSWORD:?请设置 PAGESAI_MONGO_PASSWORD}"
+      PAGESAI_MONGO_DB: "pagesai"
+      PAGESAI_BOOTSTRAP_TOKEN: "${PAGESAI_BOOTSTRAP_TOKEN:?请设置 PAGESAI_BOOTSTRAP_TOKEN}"
+    expose:
+      - "8080"
+    volumes:
+      - "data:/data"
+    depends_on:
+      mongo:
+        condition: "service_healthy"
+    healthcheck:
+      test:
+        - "CMD"
+        - "node"
+        - "deploy/docker/healthcheck.js"
+      interval: "15s"
+      timeout: "5s"
+      retries: 5
+      start_period: "30s"
+  mongo:
+    image: "pagesai/mongo:local"
+    build:
+      context: "../.."
+      dockerfile: "deploy/docker/Dockerfile.mongo"
+    restart: "unless-stopped"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: "${PAGESAI_MONGO_USER:-pagesai}"
+      MONGO_INITDB_ROOT_PASSWORD: "${PAGESAI_MONGO_PASSWORD:?请设置 PAGESAI_MONGO_PASSWORD}"
+      MONGO_INITDB_DATABASE: "pagesai"
+    volumes:
+      - "mongo-db:/data/db"
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - "mongosh --host 127.0.0.1 --port 27017 --quiet --file /opt/pagesai/mongo-ready.js"
+      interval: "10s"
+      timeout: "5s"
+      retries: 10
+      start_period: "20s"
+  init:
+    profiles:
+      - "setup"
+    image: "pagesai/app:local"
+    build:
+      context: "../.."
+      dockerfile: "deploy/docker/Dockerfile.app"
+    restart: "no"
+    entrypoint:
+      - "node"
+      - "tools/init.js"
+    command:
+      - "--container"
+      - "--data-root"
+      - "/data"
+      - "--install-root"
+      - "/opt/pagesai"
+      - "--config"
+      - "/data/config.json"
+      - "--modules"
+      - "disk,paper"
+      - "--port"
+      - "8080"
+      - "--disk-variant"
+      - "generic"
+      - "--registration"
+      - "open"
+    volumes:
+      - "data:/data"
+volumes:
+  data: {}
+  mongo-db: {}

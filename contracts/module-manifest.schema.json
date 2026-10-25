@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/contracts/module-manifest.schema.json",
+  "title": "PagesAI 模块清单契约（module manifest）",
+  "description": "每个业务模块提供一份静态、受版本管理的清单，声明标识、依赖、装配、配置、数据、生命周期与对 Glim 开放的能力。模块登记只能由构建与管理员配置产生，不得从不可信请求动态安装。方案依据：§4.2。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "coreCompatibility", "activation", "data", "lifecycle"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "稳定模块 ID，一经发布不得复用或改名。",
+      "enum": ["pages", "disk", "glim", "mail", "survey", "paper"]
+    },
+    "version": {
+      "type": "string",
+      "description": "模块版本，语义化版本号。",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "coreCompatibility": {
+      "type": "string",
+      "description": "兼容的公共核心契约范围，例如 ^1.0.0；不匹配时安装/升级必须拒绝。",
+      "pattern": "^[\\^~<>= ]*[0-9]+\\.[0-9]+\\.[0-9]+.*$"
+    },
+    "requires": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "必需依赖。不得隐含依赖私人平台。",
+      "properties": {
+        "infrastructure": {
+          "type": "array",
+          "description": "必需基础设施，只能从固定集合取值。",
+          "items": {
+            "type": "string",
+            "enum": ["mongo", "smtp", "imap", "docker", "sandbox", "object-storage"]
+          },
+          "uniqueItems": true
+        },
+        "modules": {
+          "type": "array",
+          "description": "必需的其他模块（强依赖）。一般应为空：模块默认独立可用。",
+          "items": { "type": "string", "enum": ["pages", "disk", "glim", "mail", "survey", "paper"] },
+          "uniqueItems": true
+        }
+      }
+    },
+    "optionalConnections": {
+      "type": "array",
+      "description": "可选连接的模块（供 Glim connector 发现用）。不得声明为硬依赖。",
+      "items": { "type": "string", "enum": ["pages", "disk", "glim", "mail", "survey", "paper"] },
+      "uniqueItems": true
+    },
+    "activation": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "装配入口。路径均为模块内相对路径，禁止绝对路径与越界路径。",
+      "required": ["serverEntry"],
+      "properties": {
+        "serverEntry": {
+          "type": "string",
+          "description": "服务端入口，必须位于本模块目录内。",
+          "pattern": "^(?!/)(?!.*\\.\\.)[\\w./-]+$"
+        },
+        "routePrefix": {
+          "type": "string",
+          "description": "路由前缀；未安装模块时该前缀下不得存在任何可调用路由。",
+          "pattern": "^/[\\w./-]*$"
+        },
+        "webEntry": {
+          "type": "string",
+          "description": "前端入口（可为静态页面或构建产物入口）。",
+          "pattern": "^(?!/)(?!.*\\.\\.)[\\w./-]+$"
+        },
+        "adminContribution": {
+          "type": "string",
+          "description": "后台贡献入口：菜单、路由、配置 schema、状态卡与管理 API。",
+          "pattern": "^(?!/)(?!.*\\.\\.)[\\w./-]+$"
+        }
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "配置声明。秘密字段必须显式标记，且不得有默认明文值。",
+      "properties": {
+        "schema": {
+          "type": "string",
+          "description": "模块配置 JSON Schema 的相对路径。",
+          "pattern": "^(?!/)(?!.*\\.\\.)[\\w./-]+\\.json$"
+        },
+        "secrets": {
+          "type": "array",
+          "description": "秘密字段的 JSON Pointer 列表（如 /smtp/password），用于加密存储与日志脱敏。",
+          "items": { "type": "string", "pattern": "^/" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "数据声明。命名空间用于避免跨模块集合冲突；区域引用 storage-region 契约。",
+      "required": ["namespace"],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "description": "该模块在本数据库中的集合命名空间前缀。",
+          "pattern": "^[a-z][a-z0-9]{1,23}$"
+        },
+        "regions": {
+          "type": "array",
+          "description": "该模块声明的存储区域 ID；未在核心登记的 region 不得使用。",
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$" },
+          "uniqueItems": true
+        },
+        "migrations": {
+          "type": "array",
+          "description": "有序、幂等的迁移清单；失败时该模块标记为不可用，不得静默重建空库。",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "up"],
+            "properties": {
+              "id": { "type": "string", "pattern": "^[0-9]{4,}$" },
+              "up": { "type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[\\w./-]+$" },
+              "down": {
+                "type": "string",
+                "description": "逆向迁移；数据模式不兼容时回退必须配合备份或已验证的逆向迁移。",
+                "pattern": "^(?!/)(?!.*\\.\\.)[\\w./-]+$"
+              },
+              "destructive": { "type": "boolean", "default": false }
+            }
+          }
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "生命周期钩子与就绪检查。未安装模块不得注册任务或启动子进程。",
+      "required": ["start", "health"],
+      "properties": {
+        "prepare": { "type": "string", "description": "启动前准备（幂等）。" },
+        "start": { "type": "string", "description": "启动入口。" },
+        "stop": { "type": "string", "description": "停止入口：先停止新任务、收敛运行中任务、撤销连接与同步授权，默认保留数据。" },
+        "health": { "type": "string", "description": "健康/就绪检查入口；必须区分 starting / ready / failed。" },
+        "taskStopRules": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "drainTimeoutMs": { "type": "integer", "minimum": 0, "default": 30000 },
+            "onStopFailure": { "type": "string", "enum": ["keep-installed", "mark-failed"], "default": "mark-failed" }
+          }
+        }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "对 Glim 开放的能力。未实现的能力不得登记为可用；读取与写入必须分开授权。",
+      "properties": {
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "access", "implemented"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^[a-z][a-z0-9_]{2,47}$" },
+              "access": { "type": "string", "enum": ["read", "write"] },
+              "implemented": {
+                "type": "boolean",
+                "description": "false 表示明确待完成；不得用只返回模拟数据的适配器置为 true 通过验收。"
+              },
+              "externalEffect": {
+                "type": "boolean",
+                "default": false,
+                "description": "是否产生对外后果（发信、发布、删除等），此类操作必须有可追溯授权与审计。"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

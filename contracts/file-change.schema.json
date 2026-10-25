@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/contracts/file-change.schema.json",
+  "title": "PagesAI 文件变更契约（file change record）",
+  "description": "所有写文件都必须发布同一条变更记录——包括模块自身写入，不只是网盘入口。跨数据库与文件系统的操作要有可恢复状态，不能假设它们天然构成一个事务。方案依据：§6.3。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["operationId", "regionId", "op", "fileId", "actor", "status", "recordedAt"],
+  "properties": {
+    "operationId": {
+      "type": "string",
+      "description": "幂等标识。同一 operationId 重复提交必须得到同一结果，不得重复落盘或重复计入配额。",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "regionId": {
+      "type": "string",
+      "description": "写入区域，必须已在核心登记。",
+      "pattern": "^[a-z][a-z0-9-]*\\.[a-z][a-z0-9-]*$"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["create", "update", "rename", "delete", "restore"]
+    },
+    "fileId": {
+      "type": "string",
+      "description": "稳定文件 ID。不得只依赖可变路径或某平台 inode。",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "path": {
+      "type": "string",
+      "description": "变更后的相对路径（delete 时为删除前路径）。仅作展示与定位，不作身份依据。",
+      "maxLength": 4096
+    },
+    "previousPath": {
+      "type": "string",
+      "description": "rename 时的原相对路径。",
+      "maxLength": 4096
+    },
+    "revision": {
+      "type": "integer",
+      "description": "本次提交后的修订号；delete 表示墓碑修订。",
+      "minimum": 1
+    },
+    "baseRevision": {
+      "type": "integer",
+      "description": "条件写入的基础修订。版本不符时不得默认最后写入覆盖，应保留冲突副本。",
+      "minimum": 0
+    },
+    "size": { "type": "integer", "minimum": 0 },
+    "contentHash": {
+      "type": "string",
+      "description": "内容校验值（如 sha256:...），用于完整性验证与重复检测。",
+      "pattern": "^(sha256|sha512):[0-9a-f]+$"
+    },
+    "actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "操作主体。内部服务凭据与用户会话分开；高风险写操作直接核对当前授权。",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "type": "string", "enum": ["user", "service", "module-task", "sync-client"] },
+        "userId": { "type": "string", "maxLength": 128 },
+        "serviceId": { "type": "string", "maxLength": 128 },
+        "deviceId": { "type": "string", "maxLength": 128 },
+        "capability": {
+          "type": "string",
+          "description": "本次写入所依据的能力范围（如 files.write:<regionId>）。",
+          "maxLength": 200
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "description": "提交状态。pending 表示已开始但未提交（可恢复）；committed 才可对外可见。",
+      "enum": ["pending", "committed", "failed", "recovered"]
+    },
+    "recordedAt": {
+      "type": "string",
+      "description": "记录时间（RFC 3339）。",
+      "format": "date-time"
+    },
+    "committedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "冲突处理结果。明确删除与读取失败/未挂载/权限撤销/模块停用/暂时离线必须区分，后五者绝不触发另一端批量删除。",
+      "properties": {
+        "kind": { "type": "string", "enum": ["none", "both-modified", "modify-vs-delete", "rename-vs-modify", "case-collision"] },
+        "resolution": { "type": "string", "enum": ["none", "keep-both", "keep-remote", "keep-local", "user-decided"] },
+        "conflictCopyPath": {
+          "type": "string",
+          "description": "保留的冲突副本相对路径，命名需用户可识别。",
+          "maxLength": 4096
+        }
+      }
+    },
+    "tombstone": {
+      "type": "boolean",
+      "default": false,
+      "description": "delete 是否为明确删除墓碑。读取失败、未挂载、权限撤销、模块停用、暂时离线不得写入墓碑。"
+    },
+    "cursor": {
+      "type": "string",
+      "description": "服务端变更游标位置；游标过期必须触发全量对账，不能当成远端目录为空。",
+      "maxLength": 200
+    }
+  }
+}

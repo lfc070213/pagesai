@@ -1,0 +1,68 @@
+{
+  "id": "glim",
+  "version": "0.2.0",
+  "coreCompatibility": "^1.0.0",
+  "requires": {
+    "infrastructure": []
+  },
+  "optionalConnections": ["pages", "disk", "mail", "survey", "paper"],
+  "activation": {
+    "serverEntry": "server/index.js",
+    "routePrefix": "/api/glim",
+    "adminContribution": "server/admin.js"
+  },
+  "config": {
+    "schema": "config.schema.json",
+    "secrets": ["/chatAdapter/apiKey"]
+  },
+  "data": {
+    "namespace": "glim",
+    "regions": ["glim.state"]
+  },
+  "lifecycle": {
+    "start": "start",
+    "stop": "stop",
+    "health": "health"
+  },
+  "capabilities": {
+    "tools": [
+      { "name": "pages_list_sites", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "pages_read_site", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "pages_create_site", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "pages_write_file", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "pages_read_file", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "pages_delete_file", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "pages_preview_site", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "pages_publish_site", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "disk_list_files", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "disk_list_folders", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "disk_read_file", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "disk_write_file", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "disk_move_file", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "disk_delete_file", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "disk_create_folder", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "disk_quota", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "mail_list_messages", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "mail_read_message", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "mail_delete_message", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "mail_send", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "survey_list", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "survey_read", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "survey_create", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "survey_update", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "survey_publish", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "survey_close", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "survey_responses", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "survey_stats", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "survey_export", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "paper_search", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "paper_list_docs", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "paper_read_doc", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "paper_upload_doc", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "paper_translate_doc", "access": "write", "implemented": true, "externalEffect": false },
+      { "name": "paper_get_translation", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "paper_ask_doc", "access": "read", "implemented": true, "externalEffect": false },
+      { "name": "paper_delete_doc", "access": "write", "implemented": true, "externalEffect": true }
+    ]
+  }
+}

@@ -1,0 +1,155 @@
+name: Release Package
+
+# 只允许人工触发；不监听 push / tag / schedule，因此不会自动发布。
+# environment: release 是人工审批闸门：在仓库 Settings → Environments 中
+# 为 release 配置 Required reviewers 后，未审批时本 job 不会开始。
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本标识（例如 v0.1.0）；留空则使用 sha-<短提交>'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '24'
+  TZ: UTC
+
+jobs:
+  package:
+    name: 构建可复现源码包
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: release
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: 确认工作树干净
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::工作树存在未提交改动，拒绝打包"
+            git status --porcelain
+            exit 1
+          fi
+      - name: 解析版本与提交
+        id: meta
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          version="${INPUT_VERSION:-}"
+          if [ -z "$version" ]; then
+            version="sha-$(git rev-parse --short=7 HEAD)"
+          fi
+          if printf '%s' "$version" | grep -q '[^A-Za-z0-9._-]'; then
+            echo "::error::版本标识只允许字母、数字、点、下划线与连字符"
+            exit 1
+          fi
+          if [ "${#version}" -gt 64 ]; then
+            echo "::error::版本标识最长 64 个字符"
+            exit 1
+          fi
+          sha="$(git rev-parse HEAD)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "short=${sha:0:12}" >> "$GITHUB_OUTPUT"
+      - name: 构建两次并比较
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          build_once() {
+            local base="$1"
+            mkdir -p "$base/extract"
+            node tools/public-bundle.js \
+              --out "$base/extract/pagesai-${VERSION}" \
+              --archive "$base/pagesai-${VERSION}.tar.gz"
+            node tools/release-manifest.js \
+              --dir "$base/extract" \
+              --out "$base/release-manifest.json" \
+              --json > "$base/summary.json"
+          }
+          build_once "$RUNNER_TEMP/build-a"
+          build_once "$RUNNER_TEMP/build-b"
+          cmp "$RUNNER_TEMP/build-a/pagesai-${VERSION}.tar.gz" \
+              "$RUNNER_TEMP/build-b/pagesai-${VERSION}.tar.gz"
+          cmp "$RUNNER_TEMP/build-a/release-manifest.json" \
+              "$RUNNER_TEMP/build-b/release-manifest.json"
+          echo "两次构建的源码包与清单逐字节一致"
+      - name: 发布门禁（制品）
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          # 对解包后的真实制品执行：必需文档、根 LICENSE、第三方声明、
+          # 禁用制品、密钥与地址扫描、迁移台账、契约 schema。
+          # 根 LICENSE 未由 owner 决定前，本步骤会以退出码 1 阻断发布。
+          node tools/verify-release.js \
+            --artifact "$RUNNER_TEMP/build-a/extract/pagesai-${VERSION}" \
+            --json | tee "$RUNNER_TEMP/verify-release.json"
+      - name: 生成产物与校验和
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp "$RUNNER_TEMP/build-a/pagesai-${VERSION}.tar.gz" dist/
+          cp "$RUNNER_TEMP/build-a/release-manifest.json" dist/
+          ( cd dist && sha256sum "pagesai-${VERSION}.tar.gz" release-manifest.json > SHA256SUMS )
+          cat dist/SHA256SUMS
+      - name: 写入步骤摘要
+        env:
+          VERSION: ${{ steps.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const summary = JSON.parse(fs.readFileSync(`${process.env.RUNNER_TEMP}/build-a/summary.json`, 'utf8'));
+          const checksums = fs.readFileSync('dist/SHA256SUMS', 'utf8').trim().split('\n');
+          const lines = [
+            '### 源码发布包（仅构建，未发布）',
+            '',
+            `- 版本：\`${process.env.VERSION}\``,
+            `- 提交：\`${process.env.GITHUB_SHA}\``,
+            `- 文件数：${summary.files}`,
+            `- inventoryHash：\`${summary.inventoryHash}\``,
+            '',
+            '```',
+            ...checksums,
+            '```',
+            '',
+            '正式发布需人工下载 artifact 并按 `docs/ci.md` 的发布检查单执行；本流水线不执行任何发布动作。'
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
+          NODE
+      - name: 上传 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pagesai-src-${{ steps.meta.outputs.version }}
+          path: |
+            dist/pagesai-*.tar.gz
+            dist/release-manifest.json
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 30
+      - name: 声明未发布
+        run: |
+          echo "本流水线只生成并上传构建产物，未执行任何发布、推送或部署动作。"
+          echo "版本标识：${{ steps.meta.outputs.version }}；提交：${{ steps.meta.outputs.sha }}"

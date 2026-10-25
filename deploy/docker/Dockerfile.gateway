@@ -1,0 +1,42 @@
+# PagesAI 网关镜像（唯一对外 HTTP 入口）
+#
+# 构建（上下文必须是公开版根目录）：
+#   docker build -f deploy/docker/Dockerfile.gateway -t pagesai/gateway:local .
+#
+# 运行契约：
+#   - Node 版本与 package.json engines 一致（>=24）；
+#   - 非 root 用户 pagesai (uid/gid 10001)；
+#   - 只使用 Node 内置模块，不读取 config.json，也不访问数据卷；
+#   - 上游地址与监听端口只来自部署编排环境变量：
+#       PAGESAI_GATEWAY_PORT（默认 8080）
+#       PAGESAI_GATEWAY_HOST（默认 0.0.0.0）
+#       PAGESAI_GATEWAY_UPSTREAM（默认 http://127.0.0.1:8080）
+#       PAGESAI_GATEWAY_TLS_CERT / PAGESAI_GATEWAY_TLS_KEY（同时提供才启用 HTTPS）
+#   - 健康检查经自身转发请求 /healthz 与 /readyz。
+#
+# 本文件不写入任何账号、口令、域名、证书或镜像 digest。
+
+FROM node:24-bookworm-slim
+
+ENV NODE_ENV=production \
+    PAGESAI_GATEWAY_PORT=8080 \
+    PAGESAI_GATEWAY_HOST=0.0.0.0 \
+    PAGESAI_GATEWAY_UPSTREAM=http://app:8080
+
+RUN groupadd --gid 10001 pagesai \
+ && useradd --uid 10001 --gid pagesai --home-dir /home/pagesai --create-home --shell /usr/sbin/nologin pagesai
+
+WORKDIR /opt/pagesai
+
+# 网关没有运行时依赖，只复制入口与健康检查，避免把业务代码和依赖带进入口镜像。
+COPY --chown=pagesai:pagesai deploy/docker/entrypoints/gateway.js deploy/docker/entrypoints/gateway.js
+COPY --chown=pagesai:pagesai deploy/docker/gateway-healthcheck.js deploy/docker/gateway-healthcheck.js
+
+USER pagesai
+
+EXPOSE 8080
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=5 \
+  CMD ["node", "deploy/docker/gateway-healthcheck.js"]
+
+CMD ["node", "deploy/docker/entrypoints/gateway.js"]

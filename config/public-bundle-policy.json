@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 1,
+  "description": "公开导出版白名单（默认拒绝）。只有 include 命中的常规文件才会进入制品；deny 优先于 include，且覆盖内部审计、数据、日志、上传、用户邮件、密钥与私有路径。",
+  "include": [
+    "README.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "LICENSE",
+    "NOTICE",
+    "LICENSE-DECISION.md",
+    "THIRD_PARTY_NOTICES.md",
+    "package.json",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    ".gitignore",
+    ".dockerignore",
+    "core/**",
+    "admin/**",
+    "contracts/**",
+    "deploy/**",
+    "modules/**",
+    "tests/**",
+    "tools/**",
+    "config/**",
+    "docs/**",
+    ".github/**"
+  ],
+  "deny": [
+    {
+      "id": "internal-audit",
+      "pattern": "docs/m0/**",
+      "reason": "M0 内部审计材料（真实内网地址、本机路径、owner 常量），不随公开制品分发"
+    },
+    {
+      "id": "vcs",
+      "pattern": "**/.git/**",
+      "reason": "版本库元数据"
+    },
+    {
+      "id": "dependencies",
+      "pattern": "**/node_modules/**",
+      "reason": "第三方依赖目录（由使用者自行安装）"
+    },
+    {
+      "id": "build-output",
+      "pattern": "**/target/**",
+      "reason": "Rust 构建产物"
+    },
+    {
+      "id": "build-output",
+      "pattern": "**/dist/**",
+      "reason": "构建产物"
+    },
+    {
+      "id": "build-output",
+      "pattern": "**/build/**",
+      "reason": "构建产物"
+    },
+    {
+      "id": "build-output",
+      "pattern": "**/.next/**",
+      "reason": "前端构建缓存"
+    },
+    {
+      "id": "build-output",
+      "pattern": "**/coverage/**",
+      "reason": "测试覆盖率产物"
+    },
+    {
+      "id": "python-cache",
+      "pattern": "**/__pycache__/**",
+      "reason": "Python 字节码缓存"
+    },
+    {
+      "id": "python-cache",
+      "pattern": "**/.venv/**",
+      "reason": "Python 虚拟环境"
+    },
+    {
+      "id": "python-cache",
+      "pattern": "**/venv/**",
+      "reason": "Python 虚拟环境"
+    },
+    {
+      "id": "python-cache",
+      "pattern": "**/.pytest_cache/**",
+      "reason": "pytest 缓存"
+    },
+    {
+      "id": "python-cache",
+      "pattern": "**/.mypy_cache/**",
+      "reason": "mypy 缓存"
+    },
+    {
+      "id": "data-dir",
+      "pattern": "data/**",
+      "reason": "运行时数据目录"
+    },
+    {
+      "id": "data-dir",
+      "pattern": "var/**",
+      "reason": "运行时数据目录"
+    },
+    {
+      "id": "data-dir",
+      "pattern": "storage/**",
+      "reason": "顶层存储数据目录（源码目录 core/storage 不受影响）"
+    },
+    {
+      "id": "backup",
+      "pattern": "backups/**",
+      "reason": "备份目录"
+    },
+    {
+      "id": "backup",
+      "pattern": "backup/**",
+      "reason": "备份目录"
+    },
+    {
+      "id": "backup",
+      "pattern": "**/*.bak",
+      "reason": "备份副本"
+    },
+    {
+      "id": "backup",
+      "pattern": "**/*.backup",
+      "reason": "备份副本"
+    },
+    {
+      "id": "backup",
+      "pattern": "**/*.old",
+      "reason": "旧版本副本"
+    },
+    {
+      "id": "backup",
+      "pattern": "**/*.orig",
+      "reason": "冲突副本"
+    },
+    {
+      "id": "backup",
+      "pattern": "**/*~",
+      "reason": "编辑器临时文件"
+    },
+    {
+      "id": "log",
+      "pattern": "logs/**",
+      "reason": "日志目录"
+    },
+    {
+      "id": "log",
+      "pattern": "**/*.log",
+      "reason": "日志文件"
+    },
+    {
+      "id": "upload",
+      "pattern": "uploads/**",
+      "reason": "上传文件目录"
+    },
+    {
+      "id": "upload",
+      "pattern": "upload/**",
+      "reason": "上传文件目录"
+    },
+    {
+      "id": "user-data",
+      "pattern": "**/Maildir/**",
+      "reason": "用户邮件目录"
+    },
+    {
+      "id": "user-data",
+      "pattern": "mail/**",
+      "reason": "顶层邮件数据目录"
+    },
+    {
+      "id": "user-data",
+      "pattern": "**/*.mbox",
+      "reason": "邮件归档"
+    },
+    {
+      "id": "user-data",
+      "pattern": "**/*.eml",
+      "reason": "邮件文件"
+    },
+    {
+      "id": "user-data",
+      "pattern": "**/*.pst",
+      "reason": "邮件数据文件"
+    },
+    {
+      "id": "user-data",
+      "pattern": "**/*.ost",
+      "reason": "邮件数据文件"
+    },
+    {
+      "id": "env-file",
+      "pattern": "**/.env",
+      "reason": "环境变量文件（可能含真实凭据）"
+    },
+    {
+      "id": "env-file",
+      "pattern": "**/.env.*",
+      "reason": "环境变量文件（可能含真实凭据）"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.pem",
+      "reason": "证书/私钥材料"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.key",
+      "reason": "签名密钥"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.p12",
+      "reason": "签名证书容器"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.pfx",
+      "reason": "签名证书容器"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.p8",
+      "reason": "App Store 签名密钥"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.jks",
+      "reason": "Java 密钥库"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.keystore",
+      "reason": "密钥库"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.mobileprovision",
+      "reason": "Apple 描述文件"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.cer",
+      "reason": "证书"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.crt",
+      "reason": "证书"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/*.der",
+      "reason": "证书"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/id_rsa*",
+      "reason": "SSH 私钥"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/id_ed25519*",
+      "reason": "SSH 私钥"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "signing/**",
+      "reason": "签名材料目录"
+    },
+    {
+      "id": "signing-key",
+      "pattern": "**/signing/**",
+      "reason": "签名材料目录"
+    },
+    {
+      "id": "private-path",
+      "pattern": ".ssh/**",
+      "reason": "SSH 配置与密钥"
+    },
+    {
+      "id": "private-path",
+      "pattern": "**/.ssh/**",
+      "reason": "SSH 配置与密钥"
+    },
+    {
+      "id": "private-path",
+      "pattern": "**/.gnupg/**",
+      "reason": "GPG 密钥"
+    },
+    {
+      "id": "private-path",
+      "pattern": "**/.aws/**",
+      "reason": "云厂商凭据"
+    },
+    {
+      "id": "private-path",
+      "pattern": "ops/**",
+      "reason": "内部运维目录"
+    },
+    {
+      "id": "private-path",
+      "pattern": "private/**",
+      "reason": "私有目录"
+    },
+    {
+      "id": "private-path",
+      "pattern": "internal/**",
+      "reason": "内部目录"
+    },
+    {
+      "id": "private-path",
+      "pattern": "secrets/**",
+      "reason": "密钥目录"
+    },
+    {
+      "id": "private-path",
+      "pattern": "**/secrets/**",
+      "reason": "密钥目录"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.tar",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.tar.gz",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.tgz",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.tar.bz2",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.tbz2",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.tar.xz",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.txz",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.zip",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.7z",
+      "reason": "归档包"
+    },
+    {
+      "id": "archive",
+      "pattern": "**/*.rar",
+      "reason": "归档包"
+    },
+    {
+      "id": "database",
+      "pattern": "**/*.sqlite",
+      "reason": "SQLite 数据库"
+    },
+    {
+      "id": "database",
+      "pattern": "**/*.sqlite3",
+      "reason": "SQLite 数据库"
+    },
+    {
+      "id": "database",
+      "pattern": "**/*.sqlite-wal",
+      "reason": "SQLite 预写日志"
+    },
+    {
+      "id": "database",
+      "pattern": "**/*.sqlite-shm",
+      "reason": "SQLite 共享内存文件"
+    },
+    {
+      "id": "database",
+      "pattern": "**/*.dump",
+      "reason": "数据库转储"
+    },
+    {
+      "id": "database",
+      "pattern": "**/*.sql.gz",
+      "reason": "压缩数据库转储"
+    },
+    {
+      "id": "database",
+      "pattern": "**/*.db",
+      "reason": "数据库文件"
+    },
+    {
+      "id": "os-metadata",
+      "pattern": "**/.DS_Store",
+      "reason": "macOS 元数据"
+    },
+    {
+      "id": "os-metadata",
+      "pattern": "**/Thumbs.db",
+      "reason": "Windows 缩略图缓存"
+    },
+    {
+      "id": "internal-tool",
+      "pattern": "tools/verify-no-change.sh",
+      "reason": "仓库级变更基线校验脚本，仅内部使用"
+    },
+    {
+      "id": "internal-tool",
+      "pattern": "tools/merge-ownership.sh",
+      "reason": "归属表合并脚本，仅内部审计使用"
+    },
+    {
+      "id": "internal-migration",
+      "pattern": "tools/export-public.js",
+      "reason": "旧私有源码迁移工具，需要内部归属表；不属于重构版运行或发布工具"
+    },
+    {
+      "id": "internal-test",
+      "pattern": "tests/integration/protection-gate.test.js",
+      "reason": "验证私有仓库基线保护，依赖未分发的内部脚本；由私有仓库测试执行"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "pages",
+  "version": "0.1.0",
+  "coreCompatibility": "^1.0.0",
+  "requires": {
+    "infrastructure": []
+  },
+  "activation": {
+    "serverEntry": "server/index.js",
+    "routePrefix": "/api/pages",
+    "adminContribution": "server/admin.js"
+  },
+  "config": {
+    "schema": "config.schema.json",
+    "secrets": []
+  },
+  "data": {
+    "namespace": "pages",
+    "regions": ["pages.sites", "pages.materials", "pages.ai-workspace", "pages.backends"]
+  },
+  "lifecycle": {
+    "start": "start",
+    "stop": "stop",
+    "health": "health"
+  },
+  "capabilities": {
+    "tools": [
+      { "name": "pages_list_sites", "access": "read", "implemented": true },
+      { "name": "pages_read_site", "access": "read", "implemented": true },
+      { "name": "pages_create_site", "access": "write", "implemented": true },
+      { "name": "pages_read_file", "access": "read", "implemented": true },
+      { "name": "pages_write_file", "access": "write", "implemented": true },
+      { "name": "pages_delete_file", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "pages_publish_site", "access": "write", "implemented": true, "externalEffect": true },
+      { "name": "pages_ai_modify", "access": "write", "implemented": true, "externalEffect": true }
+    ]
+  }
+}

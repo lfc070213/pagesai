@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"PagesAI Disk 客户端默认能力：窗口、事件、自动启动与更新检查。","local":true,"windows":["main"],"permissions":["core:default","core:window:allow-start-dragging","autostart:default","updater:default"]}}

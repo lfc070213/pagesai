@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/modules/pages/config.schema.json",
+  "title": "Pages 模块配置（AI 生成网页）",
+  "description": "Pages 模块的运行配置。秘密只允许来自部署注入（环境变量/秘密存储），不得写进示例配置；aiAdapter 由宿主注入代码，配置文件不保存它。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataFile": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "description": "JsonStore 数据文件路径；缺省或 null 时纯内存运行（重启即清空，仅用于试用/测试）。"
+    },
+    "publicBasePath": {
+      "type": "string",
+      "pattern": "^/[\\w./-]*$",
+      "description": "对外公开访问前缀，默认 /api/pages/public；只影响返回的 publicPath，不改变路由挂载。"
+    },
+    "maxFileBytes": {
+      "type": "integer",
+      "minimum": 1024,
+      "maximum": 10485760,
+      "description": "单个文件内容上限（UTF-8 字节），默认 1048576。"
+    },
+    "maxFilesPerSite": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "description": "单站点文件数量上限，默认 200。"
+    },
+    "maxSitesPerUser": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "单用户站点数量上限，默认 20。"
+    },
+    "maxVersions": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "description": "单站点保留的发布版本数上限，默认 50；超出后丢弃最旧快照。"
+    },
+    "allowTestModel": {
+      "type": "boolean",
+      "default": false,
+      "description": "仅测试：还必须显式设置 PAGESAI_ALLOW_TEST_MODEL=1；正式配置不得开启。"
+    },
+    "models": {
+      "type": "array",
+      "description": "可序列化模型定义；keyRef 只接受 env:NAME，秘密值不进入配置、Mongo 或任务记录。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind", "enabled"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$" },
+          "kind": { "enum": ["openai-compatible", "deterministic-test"] },
+          "baseUrl": { "type": ["string", "null"] },
+          "model": { "type": ["string", "null"] },
+          "keyRef": { "type": ["string", "null"], "pattern": "^env:[A-Z][A-Z0-9_]*$" },
+          "enabled": { "type": "boolean" },
+          "sort": { "type": "integer" }
+        }
+      }
+    },
+    "taskTimeoutMs": { "type": "integer", "minimum": 1000, "maximum": 3600000 },
+    "taskTtlMs": { "type": "integer", "minimum": 60000 },
+    "maxConcurrentTasks": { "type": "integer", "minimum": 1, "maximum": 32 },
+    "workerMemoryMB": { "type": "integer", "minimum": 32, "maximum": 1024 },
+    "backendMemoryMB": { "type": "integer", "minimum": 32, "maximum": 1024 },
+    "backendSourceBytes": { "type": "integer", "minimum": 1024, "maximum": 1048576 },
+    "backendStartTimeoutMs": { "type": "integer", "minimum": 1000, "maximum": 60000 },
+    "backendProxyTimeoutMs": { "type": "integer", "minimum": 1000, "maximum": 300000 },
+    "tenantMongoKeyRef": {
+      "type": "string",
+      "pattern": "^env:[A-Z][A-Z0-9_]*$",
+      "description": "租户后端数据库连接串的环境变量引用；注入后租户后端获得独立数据库。缺省时后端不携带任何数据库凭据。"
+    },
+    "tenantMongoUrl": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "description": "仅开发/测试可直接写入的租户数据库前缀（缺少凭据时按数据库名隔离）；生产建议使用 tenantMongoKeyRef。"
+    },
+    "workerUid": { "type": ["integer", "null"], "minimum": 1 },
+    "workerGid": { "type": ["integer", "null"], "minimum": 1 },
+    "taskRuntimeRoot": { "type": "string", "minLength": 2 },
+    "backendRuntimeRoot": { "type": "string", "minLength": 2 },
+    "maxMaterialBytes": { "type": "integer", "minimum": 1024, "maximum": 1073741824 },
+    "maxMaterials": { "type": "integer", "minimum": 1, "maximum": 100 },
+    "ai": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "AI 适配器的非秘密参数。只声明配置，不内置任何模型 SDK；未注入 aiAdapter 时 AI 修改返回 409。",
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "适配器厂商标识，例如 openai-compatible。"
+        },
+        "baseUrl": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 2048,
+          "description": "模型服务地址，由部署者填写；不得默认指向私人网关。"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "模型名称。"
+        },
+        "apiKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "模型密钥；秘密字段（见 manifest.config.secrets），只允许部署注入，不得写入示例配置或日志。"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 600000,
+          "description": "单次 AI 调用超时（毫秒），默认 60000。"
+        }
+      }
+    },
+    "aiAdapter": {
+      "description": "由宿主在调用 start() 时注入的适配器函数或对象（函数 / {generate} / {modify}）。它包含可执行代码，不属于可序列化配置文件，因此这里不约束类型；缺失时 AI 路由必须返回 409 pages.ai_not_configured。"
+    }
+  }
+}

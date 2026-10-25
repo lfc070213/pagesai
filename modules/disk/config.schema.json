@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pagesai.dev/modules/disk/config.schema.json",
+  "title": "Disk 模块配置",
+  "description": "Disk 是单逻辑盘：正式数据面只暴露 manifest 声明的 disk.user-files 区域，使用 MongoDB 元数据与统一 ContentStore 文件修订。dataFile 缺省时使用纯内存 JsonStore（仅旧测试入口）；config.regions 必须是已声明区域的子集。storageAdapter=object-storage 目前没有实现，任何数据请求都会明确返回 409，不会伪造成功结果。",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataFile": {
+      "description": "JsonStore 数据文件路径；缺省或 null 表示纯内存。相对路径由运行进程工作目录解析。",
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "regions": {
+      "description": "对外暴露的存储区域。当前模块只登记了 disk.user-files；不得通过配置引入未登记区域。",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["disk.user-files"]
+      }
+    },
+    "quotaBytes": {
+      "description": "每用户逻辑字节配额（active 与软删文件都计入，恢复不会额外占用）。",
+      "type": "integer",
+      "minimum": 1,
+      "default": 1073741824
+    },
+    "chunkSizeBytes": {
+      "description": "建议分块大小；仅作为 init 响应的默认值，服务端按 maxChunkBytes 校验实际分块。",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 67108864,
+      "default": 5242880
+    },
+    "maxChunkBytes": {
+      "description": "单个分块允许的最大解码后字节数。",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 67108864,
+      "default": 67108864
+    },
+    "maxFileBytes": {
+      "description": "单文件最大字节数；0 表示沿用 quotaBytes。",
+      "type": "integer",
+      "minimum": 0,
+      "default": 0
+    },
+    "uploadTtlMs": {
+      "description": "未完成上传的保留时间；启动时会取消超过该时间且未进入提交阶段的上传并释放配额预留。",
+      "type": "integer",
+      "minimum": 60000,
+      "maximum": 31536000000,
+      "default": 86400000
+    },
+    "syncHistoryLimit": {
+      "description": "每用户保留的同步变更条数。超过后最旧的游标会失效并要求客户端全量对账；不能把游标过期当作删除。",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000000,
+      "default": 100000
+    },
+    "share": {
+      "description": "只读分享令牌的有效期策略。",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "defaultTtlSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31536000,
+          "default": 86400
+        },
+        "maxTtlSeconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 31536000,
+          "default": 2592000
+        }
+      }
+    },
+    "storageAdapter": {
+      "description": "存储适配器。json 为内置实现；object-storage 尚未实现，选择后数据请求返回 409 DISK_ADAPTER_NOT_CONFIGURED。",
+      "type": "string",
+      "enum": ["json", "object-storage"],
+      "default": "json"
+    },
+    "objectStorage": {
+      "description": "object-storage 适配器的连接声明占位。当前版本不会使用它，也不会据此伪造成功结果。",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "endpoint": { "type": "string", "maxLength": 2048 },
+        "bucket": { "type": "string", "maxLength": 255 },
+        "region": { "type": "string", "maxLength": 128 }
+      }
+    }
+  }
+}

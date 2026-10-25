@@ -1,0 +1,32 @@
+{
+  "id": "survey",
+  "version": "0.2.0",
+  "coreCompatibility": "^1.0.0",
+  "requires": {
+    "infrastructure": []
+  },
+  "activation": {
+    "serverEntry": "server/index.js",
+    "routePrefix": "/api/survey",
+    "adminContribution": "server/admin.js"
+  },
+  "config": {
+    "schema": "config.schema.json",
+    "secrets": []
+  },
+  "data": {
+    "namespace": "survey",
+    "regions": [
+      "survey.responses",
+      "survey.attachments"
+    ]
+  },
+  "lifecycle": {
+    "start": "start",
+    "stop": "stop",
+    "health": "health"
+  },
+  "capabilities": {
+    "tools": []
+  }
+}

@@ -1,0 +1,124 @@
+{
+  "contractVersion": 1,
+  "status": "contract-frozen-entrypoints-implemented",
+  "description": "C03 目标运行拓扑。进程边界与接口仍按此冻结；每个单元的 implementationStatus 与 evidence 记录当前实现。镜像构建与容器启动未经容器运行时验证（本机无 docker/podman），并且本契约不提供或虚构镜像 digest。",
+  "configuration": {
+    "schema": "config/config.schema.json",
+    "schemaVersion": 1,
+    "facts": [
+      "modules",
+      "registration",
+      "disk.variant",
+      "models",
+      "storage",
+      "regions",
+      "services",
+      "secrets.reference"
+    ],
+    "forbiddenFallbacks": [
+      "production-env",
+      "production-service-discovery",
+      "development-identity-headers",
+      "silent-in-memory-production-store"
+    ]
+  },
+  "units": [
+    {
+      "id": "gateway",
+      "kind": "gateway",
+      "runtime": "deployer-managed-or-container",
+      "required": true,
+      "implementationStatus": "entrypoint-implemented-image-unverified",
+      "responsibilities": ["tls-termination", "http-streaming", "backpressure", "request-cancellation"],
+      "evidence": [
+        "deploy/docker/entrypoints/gateway.js",
+        "deploy/docker/Dockerfile.gateway",
+        "deploy/docker/gateway-healthcheck.js",
+        "tests/integration/gateway.test.js"
+      ],
+      "notes": "纯 Node 流式反代：逐跳头剥离、X-Forwarded-* 覆写、Range/SSE/零字节透传、客户端中断销毁上游、上游不可达 502；可选 TLS 证书/私钥来自环境变量。镜像未构建、容器未启动。"
+    },
+    {
+      "id": "app",
+      "kind": "application",
+      "runtime": "node",
+      "required": true,
+      "implementationStatus": "implemented-image-unverified",
+      "responsibilities": ["identity", "authorization", "module-host", "admin", "module-routes"],
+      "evidence": [
+        "deploy/docker/entrypoints/app.js",
+        "deploy/docker/Dockerfile.app",
+        "core/runtime.js",
+        "core/server.js",
+        "tests/integration/core-boot.test.js",
+        "tests/integration/module-mount.test.js"
+      ],
+      "notes": "入口读取 /data/config.json，与部署环境交叉校验后离线校验再监听；生产环境拒绝内存身份/存储回退。镜像未构建、容器未启动。"
+    },
+    {
+      "id": "mongodb",
+      "kind": "database",
+      "runtime": "mongodb-single-node-replica-set",
+      "required": true,
+      "implementationStatus": "identity-session-storage-metadata-wired",
+      "responsibilities": ["identity", "module-metadata", "revisions", "operations", "tasks", "change-index"],
+      "evidence": [
+        "core/storage/mongo-metadata.js",
+        "core/storage/content-store.js",
+        "core/storage/module-file-adapter.js",
+        "core/server.js",
+        "tests/integration/identity-mongodb.test.js",
+        "tests/integration/storage-mongodb.test.js"
+      ],
+      "notes": "身份、会话、pages/disk 的存储元数据与文件内容已接 MongoDB；paper/glim/mail/survey 的业务数据仍写各自 JsonStore dataFile，未迁入 MongoDB。",
+      "network": { "publicPort": false },
+      "highAvailability": false
+    },
+    {
+      "id": "execution-worker",
+      "kind": "worker",
+      "runtime": "node-with-optional-sandboxed-python-tools",
+      "requiredWhenModules": ["pages", "glim"],
+      "implementationStatus": "fork-ipc-implemented-sandbox-unverified",
+      "responsibilities": ["model-task-execution", "tool-execution", "timeout", "cancellation", "resource-limits"],
+      "forbiddenAccess": ["admin-session", "host-secrets", "other-tenant-data"],
+      "evidence": [
+        "deploy/docker/entrypoints/worker.js",
+        "deploy/docker/Dockerfile.worker",
+        "modules/pages/server/task-manager.js",
+        "modules/pages/worker/task-worker.js"
+      ],
+      "notes": "Pages 任务与租户后端由 app 进程 fork + IPC 启动子进程，不监听端口、不是 Compose 长驻服务；worker.js 支持 --check。沙盒隔离、资源限制与逃逸防护（C11）未验证。"
+    },
+    {
+      "id": "mail-infrastructure",
+      "kind": "optional-external-infrastructure",
+      "runtime": "deployer-selected-smtp-imap-or-separate-self-hosting",
+      "requiredWhenModules": [],
+      "implementationStatus": "external-configuration-required",
+      "responsibilities": ["smtp", "imap"],
+      "notes": "协议栈不自建；Mail 模块通过部署注入的适配器使用 SMTP/IMAP，未配置时不允许跳过邮箱验证。"
+    }
+  ],
+  "moduleRuntime": {
+    "hostLanguage": "node",
+    "glimLanguage": "node",
+    "independentPythonGlimService": false,
+    "diskMaySplitForStreaming": true,
+    "diskSplitMayCreateSecondAuthority": false
+  },
+  "buildIsolation": {
+    "dependenciesInsideSharedSourceTree": false,
+    "containerContextInsideSharedSourceTree": false,
+    "testDataInsideSharedSourceTree": false,
+    "productionCredentialsAllowed": false,
+    "productionNetworkDefault": false
+  },
+  "verification": {
+    "contract": "frozen",
+    "entrypoints": "implemented-and-process-tested-without-containers",
+    "containerBuild": "blocked-no-container-runtime-on-host",
+    "imageDigests": "absent-by-design"
+  },
+  "releaseRule": "Dockerfiles、真实入口和协议验证先于 Compose 镜像摘要；本契约不提供或虚构镜像 digest。"
+}

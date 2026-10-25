@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>PagesAI 管理后台</title>
+  <link rel="stylesheet" href="./admin.css">
+  <script src="./admin.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">PA</span>
+      <span class="brand__name">PagesAI 管理后台</span>
+      <span class="tag">唯一管理员层级</span>
+    </div>
+    <div class="topbar__session">
+      <span id="session-user" class="session-user">未登录</span>
+      <button id="logout" class="btn btn--ghost btn--small" type="button" hidden>退出登录</button>
+    </div>
+  </header>
+
+  <div id="global-message" class="banner" role="status" aria-live="polite" hidden></div>
+
+  <main id="main" class="main">
+    <!-- 登录 -->
+    <section id="view-login" class="view" hidden aria-labelledby="login-title">
+      <div class="login-grid">
+        <form id="login-form" class="card login-card" novalidate>
+          <h1 id="login-title">管理员登录</h1>
+          <p class="hint">后台只有 <code>user</code> 与 <code>admin</code> 两种角色，没有第二级管理员。非管理员账号登录后会被拒绝。</p>
+          <label class="field" for="login-username">
+            <span class="field__label">用户名</span>
+            <input id="login-username" name="username" type="text" autocomplete="username" spellcheck="false" minlength="3" maxlength="32" required>
+          </label>
+          <label class="field" for="login-password">
+            <span class="field__label">口令</span>
+            <input id="login-password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="200" required>
+          </label>
+          <button id="login-submit" class="btn btn--primary" type="submit">登录</button>
+          <p id="login-error" class="form-error" role="alert" hidden></p>
+          <p id="login-health" class="hint hint--mono">核心存活探测中…</p>
+        </form>
+
+        <aside class="card login-aside" aria-label="后台说明">
+          <h2>首次部署</h2>
+          <p>首名管理员由运维通过核心的一次性引导流程创建。本后台不提供网页引导，也不做网页端模块安装，避免从浏览器执行任意代码。</p>
+          <h2>会话</h2>
+          <p>登录成功后会话由 HttpOnly Cookie 承载，脚本不读取、不存储令牌。退出登录会撤销当前会话，停用账号会清除该账号全部会话。</p>
+          <h2>后台范围</h2>
+          <ul class="list">
+            <li>账号：查看、改角色、停用/启用</li>
+            <li>注册配置：开关、方式与 Mail 依赖</li>
+            <li>模块状态：按已安装模块装配状态卡、能力、后台贡献与控制台入口</li>
+            <li>运行诊断：存活、就绪与数据根</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 非管理员 -->
+    <section id="view-denied" class="view" hidden aria-labelledby="denied-title">
+      <div class="card card--narrow">
+        <h1 id="denied-title">需要管理员权限</h1>
+        <p>当前账号：<strong id="denied-user">—</strong></p>
+        <p class="hint">后台只有一个管理员层级，没有二级管理员或子角色。请让已有管理员把你的账号角色改为 <code>admin</code>，或改用管理员账号登录。</p>
+        <div class="actions">
+          <button id="denied-recheck" class="btn" type="button">重新检查</button>
+          <button id="denied-logout" class="btn btn--ghost" type="button">退出登录</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 后台主体 -->
+    <section id="view-dashboard" class="view" hidden aria-label="管理后台">
+      <div class="layout">
+        <aside class="sidebar" aria-label="后台导航">
+          <nav class="nav" aria-label="基础功能">
+            <p class="nav__title">基础</p>
+            <button class="nav__item" type="button" data-panel-target="overview">概览</button>
+            <button class="nav__item" type="button" data-panel-target="modules">模块状态</button>
+            <button class="nav__item" type="button" data-panel-target="accounts">账号管理</button>
+            <button class="nav__item" type="button" data-panel-target="registration">注册配置</button>
+            <button class="nav__item" type="button" data-panel-target="diagnostics">运行诊断</button>
+          </nav>
+          <nav id="nav-modules" class="nav" aria-label="已安装模块"></nav>
+          <p id="menu-hint" class="hint hint--small">模块菜单只装配已安装模块；未安装模块不出现，也不会被请求。</p>
+        </aside>
+
+        <div class="content">
+          <!-- 概览 -->
+          <section class="panel" data-panel="overview" aria-labelledby="panel-overview-title">
+            <header class="panel__head">
+              <h1 id="panel-overview-title">概览</h1>
+              <button id="overview-refresh" class="btn btn--small" type="button">刷新全部</button>
+            </header>
+            <div class="grid grid--2">
+              <div class="card">
+                <h2>当前账号</h2>
+                <dl class="facts">
+                  <div class="facts__row"><dt>用户名</dt><dd id="overview-user">—</dd></div>
+                  <div class="facts__row"><dt>角色</dt><dd id="overview-role">—</dd></div>
+                  <div class="facts__row"><dt>邮箱</dt><dd id="overview-email">—</dd></div>
+                  <div class="facts__row"><dt>创建时间</dt><dd id="overview-created">—</dd></div>
+                </dl>
+              </div>
+              <div class="card">
+                <h2>模块</h2>
+                <p id="overview-modules" class="stat-line">尚未加载</p>
+                <h2>账号</h2>
+                <p id="overview-users" class="stat-line">尚未加载</p>
+                <h2>诊断</h2>
+                <p id="overview-diagnostics" class="stat-line">尚未完成</p>
+              </div>
+            </div>
+            <p class="hint">数据来自 <code>/api/me</code>、<code>/api/modules</code>、<code>/api/admin/modules</code>、<code>/api/admin/users</code>、<code>/healthz</code>、<code>/readyz</code>。写操作只有改角色、停用/启用账号与启用/停用模块。</p>
+          </section>
+
+          <!-- 模块状态 -->
+          <section class="panel" data-panel="modules" hidden aria-labelledby="panel-modules-title">
+            <header class="panel__head">
+              <h1 id="panel-modules-title">模块状态</h1>
+              <button id="modules-refresh" class="btn btn--small" type="button">刷新状态</button>
+            </header>
+            <p id="modules-summary" class="stat-line">尚未加载</p>
+            <ul class="legend" aria-label="模块状态图例">
+              <li><span class="badge badge--uninstalled">未安装</span>未登记且未声明</li>
+              <li><span class="badge badge--disabled">未启用</span>已登记、配置完整、未启动</li>
+              <li><span class="badge badge--needs-config">待配置</span>配置不完整或未完成登记</li>
+              <li><span class="badge badge--starting">启动中</span>已启用、尚未就绪</li>
+              <li><span class="badge badge--ready">可用</span>已就绪</li>
+              <li><span class="badge badge--error">故障</span>启动或健康检查异常</li>
+              <li><span class="badge badge--upgrading">升级中</span>核心返回升级标记时</li>
+            </ul>
+            <h2>已装配模块</h2>
+            <div id="modules-installed" class="grid grid--2"></div>
+            <h2>未安装模块</h2>
+            <div id="modules-uninstalled" class="card card--muted"><p class="empty">尚未加载。</p></div>
+            <p class="hint">安装与升级属于部署操作：后台不做网页端安装，也不从浏览器执行代码。启用/停用只作用于已登记模块，调用核心既有接口，并保留数据与登记状态。模块专属页面的入口与配置、任务、状态只来自各模块自己的后台贡献（<code>/api/admin/modules</code>）；贡献不可用时只展示真实原因，不显示占位菜单或占位按钮。</p>
+          </section>
+
+          <!-- 账号管理 -->
+          <section class="panel" data-panel="accounts" hidden aria-labelledby="panel-accounts-title">
+            <header class="panel__head">
+              <h1 id="panel-accounts-title">账号管理</h1>
+              <button id="users-refresh" class="btn btn--small" type="button">刷新账号</button>
+            </header>
+            <p id="users-count" class="stat-line">尚未加载</p>
+            <div class="table-wrap">
+              <table class="table">
+                <caption class="sr-only">账号列表，可修改角色与停用状态</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">用户名</th>
+                    <th scope="col">角色</th>
+                    <th scope="col">状态</th>
+                    <th scope="col">邮箱</th>
+                    <th scope="col">创建时间</th>
+                    <th scope="col">用户 ID</th>
+                  </tr>
+                </thead>
+                <tbody id="users-body"></tbody>
+              </table>
+            </div>
+            <p id="users-empty" class="empty" hidden>没有账号。</p>
+            <p class="hint">角色只有 <code>user</code> / <code>admin</code>。最后一名有效管理员不能降级或停用（核心返回 <code>LAST_ADMIN_PROTECTED</code>）。停用会清除该账号全部会话；当前登录账号不能在此停用或降级。</p>
+          </section>
+
+          <!-- 注册配置 -->
+          <section class="panel" data-panel="registration" hidden aria-labelledby="panel-registration-title">
+            <header class="panel__head">
+              <h1 id="panel-registration-title">注册配置</h1>
+              <button id="reg-probe" class="btn btn--small" type="button">重新探测</button>
+            </header>
+            <div class="card">
+              <dl class="facts">
+                <div class="facts__row"><dt>注册开关</dt><dd id="reg-switch">尚未探测</dd></div>
+                <div class="facts__row"><dt>注册方式</dt><dd id="reg-method">尚未探测</dd></div>
+                <div class="facts__row"><dt>Mail 模块</dt><dd id="reg-mail">尚未加载</dd></div>
+                <div class="facts__row"><dt>邮箱域名限制</dt><dd id="reg-domains">—</dd></div>
+                <div class="facts__row"><dt>探测时间</dt><dd id="reg-time">—</dd></div>
+              </dl>
+              <p id="reg-detail" class="hint">尚未探测。</p>
+            </div>
+            <p class="hint">核心没有单独的注册配置查询接口。本页通过一次<b>保证校验失败</b>的注册请求（用户名为空、口令为空）判断开关与方式，该请求不会创建账号。邮箱域名白名单无法从现有接口推断，因此不展示猜测值。</p>
+          </section>
+
+          <!-- 运行诊断 -->
+          <section class="panel" data-panel="diagnostics" hidden aria-labelledby="panel-diagnostics-title">
+            <header class="panel__head">
+              <h1 id="panel-diagnostics-title">运行诊断</h1>
+              <button id="diag-refresh" class="btn btn--small" type="button">重新诊断</button>
+            </header>
+            <div class="card">
+              <dl class="facts">
+                <div class="facts__row"><dt>存活 <code>/healthz</code></dt><dd id="diag-health">—</dd></div>
+                <div class="facts__row"><dt>就绪 <code>/readyz</code></dt><dd id="diag-ready">—</dd></div>
+                <div class="facts__row"><dt>数据根</dt><dd id="diag-dataroot">—</dd></div>
+                <div class="facts__row"><dt>就绪清单模块数</dt><dd id="diag-modcount">—</dd></div>
+                <div class="facts__row"><dt>部署声明模块数</dt><dd id="diag-installedcount">—</dd></div>
+                <div class="facts__row"><dt>可用能力数</dt><dd id="diag-capcount">—</dd></div>
+                <div class="facts__row"><dt>诊断时间</dt><dd id="diag-time">—</dd></div>
+              </dl>
+            </div>
+            <div class="card card--muted">
+              <h2>已知限制</h2>
+              <ul class="list">
+                <li>身份与会话当前为内存实现：进程重启后需要重新登录，首名管理员引导状态也会重置。</li>
+                <li>没有结构化日志与日志分级：排障只能查看进程 stdout/stderr。</li>
+                <li><code>/healthz</code> 与 <code>/readyz</code> 不需要登录，其中 <code>/readyz</code> 会返回数据根路径；公开部署应在反向代理层限制这两个探测端点的来源（部署者负责）。</li>
+              </ul>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>PagesAI 公共版 · 后台外壳（P6）· 前端零第三方依赖</p>
+  </footer>
+
+  <noscript>
+    <p class="banner banner--error">后台需要 JavaScript 才能工作，请启用后刷新。</p>
+  </noscript>
+</body>
+</html>

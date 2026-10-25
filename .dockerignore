@@ -1,0 +1,33 @@
+# Docker 构建上下文排除项（上下文必须是公开版根目录）
+# 目的：镜像只包含运行代码与依赖清单，不包含依赖目录、数据、秘密、日志或内部材料。
+
+.git
+.gitignore
+.github
+node_modules
+**/node_modules
+data
+**/data
+secrets
+**/secrets
+.env
+.env.*
+*.log
+*.pid
+*.sqlite
+*.sqlite3
+*.dump
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+tests
+docs/m0
+deploy/presets
+deploy/README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE-DECISION.md
+SECURITY.md
+THIRD_PARTY_NOTICES.md
+.DS_Store

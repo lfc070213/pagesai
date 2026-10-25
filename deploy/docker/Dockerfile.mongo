@@ -1,0 +1,6 @@
+# Authenticated single-node replica set; required for transaction-backed writes.
+FROM mongo:7
+COPY deploy/docker/mongo-start.sh /usr/local/bin/pagesai-mongo-start
+COPY deploy/docker/mongo-ready.js /opt/pagesai/mongo-ready.js
+RUN chmod 755 /usr/local/bin/pagesai-mongo-start
+ENTRYPOINT ["/usr/local/bin/pagesai-mongo-start"]
