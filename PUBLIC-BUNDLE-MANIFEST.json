@@ -4,13 +4,13 @@
   "manifestName": "PUBLIC-BUNDLE-MANIFEST.json",
   "policy": {
     "path": "config/public-bundle-policy.json",
-    "sha256": "f63f9e5a3565c0ec0b7ddfca624e80e68c8d2cc2bb0b004b0cf201a5c6639701"
+    "sha256": "59dfc6f08db0848a35eedba2cf1e9a5b30a3f8aed1b968e1ff5a6b1217182198"
   },
   "inventoryAlgorithm": "sha256(concat(sorted(path + '\\t' + sha256 + '\\n')))",
-  "inventoryHash": "bc71cc45c63b30d01e75d5ec53c4fec8e3c2c9b362a603ef9fad0e1d0c15c439",
+  "inventoryHash": "5e74a10c5f4b3570f5da83c640fd0e543a176ed22af7de75a3edb2522f8bb8ad",
   "counts": {
-    "files": 1268,
-    "bytes": 9096108
+    "files": 1270,
+    "bytes": 9092720
   },
   "include": [
     "README.md",
@@ -36,13 +36,20 @@
     "tools/**",
     "config/**",
     "docs/**",
-    ".github/**"
+    ".github/**",
+    ".gitattributes"
   ],
   "files": [
     {
       "path": ".dockerignore",
       "sha256": "ff5dc81f333cb70606d45420eb31d30e8066ba8e6ee47153da94df2c6c60360d",
       "bytes": 502,
+      "mode": 420
+    },
+    {
+      "path": ".gitattributes",
+      "sha256": "b8f37a3ae200798ba9fed516671a9264dd1e26908c6733a1758421a1e93ce3c3",
+      "bytes": 698,
       "mode": 420
     },
     {
@@ -95,14 +102,14 @@
     },
     {
       "path": "README.md",
-      "sha256": "f714f0049c285a6f8a48753359e142664c70cfa8fa17e50f253fd9bda153c719",
-      "bytes": 3801,
+      "sha256": "1f1c3e25a3407c5743dda69b8447f4f068651253604e3ef7b84ae73d7f9463a9",
+      "bytes": 4821,
       "mode": 420
     },
     {
       "path": "SECURITY.md",
-      "sha256": "b330008ccf368dadef8e740614188aabfb6c06e689c94b5a8ab05715f9797a26",
-      "bytes": 11431,
+      "sha256": "6b1378612e0bd2d735f779d7276c384e36d7b80912855ce4cb730586ac87ae8c",
+      "bytes": 3374,
       "mode": 420
     },
     {
@@ -161,8 +168,8 @@
     },
     {
       "path": "config/public-bundle-policy.json",
-      "sha256": "f63f9e5a3565c0ec0b7ddfca624e80e68c8d2cc2bb0b004b0cf201a5c6639701",
-      "bytes": 9758,
+      "sha256": "59dfc6f08db0848a35eedba2cf1e9a5b30a3f8aed1b968e1ff5a6b1217182198",
+      "bytes": 9780,
       "mode": 420
     },
     {
@@ -581,8 +588,8 @@
     },
     {
       "path": "docs/guides/quickstart.md",
-      "sha256": "da414271fb6561e5f5c22776bed07a52e361cccc0dba128f7bd2bd5c05d532d7",
-      "bytes": 3654,
+      "sha256": "3e4557f3458c42db740fac0793f716a7ec07122f21a2b5ddf6110018f97420b8",
+      "bytes": 4453,
       "mode": 420
     },
     {
@@ -611,8 +618,8 @@
     },
     {
       "path": "docs/licenses/cargo-evidence.json",
-      "sha256": "77c498a313e6e8a97304a2e9cf3e05adf3f4c17407286d24081d643ddecca7c7",
-      "bytes": 296250,
+      "sha256": "4e2aef8ddea69514c3ccc5d51af53d4bb0924e9c62bf68e070346460cf301feb",
+      "bytes": 296894,
       "mode": 420
     },
     {
@@ -6439,6 +6446,12 @@
       "path": "docs/security-scan-report.md",
       "sha256": "d1a554c3d4eaf8bd425379c8b00431e507b7cf62fe86ec1709b5f434892cc9ac",
       "bytes": 5699,
+      "mode": 420
+    },
+    {
+      "path": "docs/web-preview.md",
+      "sha256": "0aba09173d6cc3671211d3893504296975e29dc6879820d7f4942100a6f3b115",
+      "bytes": 1486,
       "mode": 420
     },
     {

@@ -1450,7 +1450,8 @@
       "licenseFiles": [
         {
           "path": "docs/licenses/cargo/dlopen2-0.8.2/CARGO-LICENSE-DECLARATION.txt",
-          "sha256": "4db2cb7eef7db93aac79ebab07af14ef27e00cc322ebb9f3744fcc971a1a6b6a"
+          "sha256": "0153c3c729490e105d65aa883c3891323ae801aedbf24eac4edbe21de6d2efa7",
+          "normalization": "CRLF converted to LF; content verified against original crate"
         }
       ]
     },
@@ -1462,7 +1463,8 @@
       "licenseFiles": [
         {
           "path": "docs/licenses/cargo/dlopen2_derive-0.4.3/CARGO-LICENSE-DECLARATION.txt",
-          "sha256": "5e3d2d7fe64c4b47b01d4c2e88dbf669bf0950d937b43757b48f965bea4e254a"
+          "sha256": "8a2558abfe3b44960eaca355b1f3262b86d27760978f8a34d317d1b3daa92965",
+          "normalization": "CRLF converted to LF; content verified against original crate"
         }
       ]
     },
@@ -2202,7 +2204,8 @@
       "licenseFiles": [
         {
           "path": "docs/licenses/cargo/generic-array-0.14.7/LICENSE",
-          "sha256": "c09aae9d3c77b531f56351a9947bc7446511d6b025b3255312d3e3442a9a7583"
+          "sha256": "ad4fcfaf8d5b12b97409c137a03d4a4e4b21024c65c54f976cc3b609c1bd5b0f",
+          "normalization": "CRLF converted to LF; content verified against original crate"
         }
       ]
     },
@@ -4394,7 +4397,8 @@
       "licenseFiles": [
         {
           "path": "docs/licenses/cargo/proc-macro-error-1.0.4/LICENSE-APACHE",
-          "sha256": "4665f973ccb9393807a7fb1264add6b3513d19abc6b357e4cb52c6fe59cc6a3b"
+          "sha256": "6fd0f3522047150ca7c1939f02bc4a15662a4741a89bc03ae784eefa18caa299",
+          "normalization": "CRLF converted to LF; content verified against original crate"
         },
         {
           "path": "docs/licenses/cargo/proc-macro-error-1.0.4/LICENSE-MIT",
@@ -4442,7 +4446,8 @@
       "licenseFiles": [
         {
           "path": "docs/licenses/cargo/quick-xml-0.41.0/LICENSE-MIT.md",
-          "sha256": "5b2c207dcf571267ebe0bbdd5bf321f561ddc22ff597e7b363e96f4539507a29"
+          "sha256": "f0cf9b1c62bbe3bd3a69f5f79c7158f513f612b4940a0a812d1db39d605318bc",
+          "normalization": "CRLF converted to LF; content verified against original crate"
         }
       ]
     },
@@ -7262,11 +7267,13 @@
       "licenseFiles": [
         {
           "path": "docs/licenses/cargo/windows-native-keyring-store-1.1.0/LICENSE-APACHE",
-          "sha256": "c50e49cbc9917204c7e1d9c046342069e839c4947ef8c6027d23a3184ae73706"
+          "sha256": "78ebc2ea2a1cec9cbec2e1a6fc15e73474fe22bdad7575518e7f4628651d49c4",
+          "normalization": "CRLF converted to LF; content verified against original crate"
         },
         {
           "path": "docs/licenses/cargo/windows-native-keyring-store-1.1.0/LICENSE-MIT",
-          "sha256": "1b9916aeb17b63b74372d5493b6c6ce828eef2853e1dc48ac2bba701f148920c"
+          "sha256": "157cc607717b1b372a69f6b4526f6ad18c1279af9f3267835cca2943f37bc07d",
+          "normalization": "CRLF converted to LF; content verified against original crate"
         }
       ]
     },

@@ -1,0 +1,15 @@
+# 发布归档排除项（git archive 读取；不影响仓库内测试与检查）
+#
+# 这些路径属于内部审计、内部工具或仓库流程，不随分发包交付：
+#   - docs/m0：M0 审计证据，含真实内网地址与本机路径
+#   - tools/merge-ownership.sh、tools/verify-no-change.sh：仅内部审计使用
+#
+# 与 config/public-bundle-policy.json 的 deny 规则保持同一口径。
+docs/m0 export-ignore
+tools/merge-ownership.sh export-ignore
+tools/verify-no-change.sh export-ignore
+tools/export-public.js export-ignore
+tests/integration/protection-gate.test.js export-ignore
+
+# License receipts hash the distributed LF-normalized text.
+docs/licenses/cargo/** text eol=lf

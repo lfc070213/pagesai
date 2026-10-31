@@ -25,7 +25,8 @@
     "tools/**",
     "config/**",
     "docs/**",
-    ".github/**"
+    ".github/**",
+    ".gitattributes"
   ],
   "deny": [
     {

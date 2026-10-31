@@ -7,13 +7,13 @@
 - Node.js 24；
 - 可用的 MongoDB replica set；
 - 独立、显式的数据根；
-- `npm install` 只安装公开包声明的 `mongodb` 等依赖。测试 Mongo 二进制和测试依赖必须放在仓库外，不读取生产 `.env`。
+- `npm ci --ignore-scripts` 只安装公开包声明的 `mongodb` 等依赖。测试 Mongo 二进制和测试依赖必须放在仓库外，不读取生产 `.env`。
 
 ## 初始化与启动
 
 ```bash
-cd source/site/public-release/pagesai
-npm install
+cd pagesai
+npm ci --ignore-scripts
 
 node tools/init.js \
   --data-root /tmp/pagesai-quickstart-data \
@@ -29,13 +29,30 @@ PAGESAI_MONGO_URL='mongodb://127.0.0.1:27017/?replicaSet=rs0' \
 
 ## 管理员和控制台
 
-一次性引导管理员（生产应配置 bootstrap token）：
+一次性引导管理员。启动服务时必须设置 `PAGESAI_BOOTSTRAP_TOKEN`；若使用 README 的 Compose 命令，继续在同一个终端执行：
 
 ```bash
-curl -s -X POST http://127.0.0.1:8080/api/admin/bootstrap \
-  -H 'content-type: application/json' \
-  -d '{"username":"rootadmin","password":"password-1234"}'
+printf '新管理员密码：'
+stty -echo
+IFS= read -r PAGESAI_ADMIN_PASSWORD
+stty echo
+printf '\n'
+export PAGESAI_ADMIN_PASSWORD
+node - <<'JS'
+(async () => {
+  if (!process.env.PAGESAI_BOOTSTRAP_TOKEN || !process.env.PAGESAI_ADMIN_PASSWORD) throw Error('需要 bootstrap token 和管理员密码');
+  const response = await fetch('http://127.0.0.1:8080/api/admin/bootstrap', {
+    method: 'POST', headers: {'content-type': 'application/json'},
+    body: JSON.stringify({username: 'rootadmin', password: process.env.PAGESAI_ADMIN_PASSWORD, bootstrapToken: process.env.PAGESAI_BOOTSTRAP_TOKEN})
+  });
+  console.log('管理员引导 HTTP 状态：', response.status);
+  if (response.status !== 201) process.exitCode = 1;
+})();
+JS
+unset PAGESAI_ADMIN_PASSWORD
 ```
+
+密码不作为命令行参数或固定示例写入历史。首次成功返回 201；后续引导会被拒绝。
 
 打开 `http://127.0.0.1:8080/pages`，使用管理员登录，或注册普通用户。控制台使用核心 HttpOnly 会话 Cookie，不需要也不接受开发身份头。
 
