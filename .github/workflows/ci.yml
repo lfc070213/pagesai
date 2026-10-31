@@ -22,6 +22,7 @@ jobs:
       - name: Full tests with temporary MongoDB
         env:
           PAGESAI_MONGO_TEST: '1'
+          NODE_PATH: ${{ github.workspace }}/node_modules
           MONGOMS_DOWNLOAD_DIR: ${{ runner.temp }}/mongo-binaries
         run: node tools/test-all.js
       - run: cargo test --locked --manifest-path modules/disk/sync/Cargo.toml

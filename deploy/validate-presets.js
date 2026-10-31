@@ -322,7 +322,7 @@ function validateDockerfiles(report) {
     }
     const text = fs.readFileSync(absolute, 'utf8');
     scanText(text, scope, report);
-    if (!/^FROM node:24-bookworm-slim$/m.test(text)) report.add(scope, '基础镜像必须是 node:24-bookworm-slim');
+    if (!/^FROM node:24-bookworm-slim@sha256:[0-9a-f]{64}$/m.test(text)) report.add(scope, '基础镜像必须是 node:24-bookworm-slim');
     if (!/--gid 10001 pagesai/.test(text) || !/--uid 10001/.test(text)) {
       report.add(scope, '必须使用 uid/gid 10001 的 pagesai 用户');
     }

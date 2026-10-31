@@ -7,10 +7,10 @@
     "sha256": "f63f9e5a3565c0ec0b7ddfca624e80e68c8d2cc2bb0b004b0cf201a5c6639701"
   },
   "inventoryAlgorithm": "sha256(concat(sorted(path + '\\t' + sha256 + '\\n')))",
-  "inventoryHash": "b16028287999f4aa04a39d27d26215844c461f74f68946f84da80a0f148e8153",
+  "inventoryHash": "bc71cc45c63b30d01e75d5ec53c4fec8e3c2c9b362a603ef9fad0e1d0c15c439",
   "counts": {
-    "files": 1267,
-    "bytes": 9093231
+    "files": 1268,
+    "bytes": 9096108
   },
   "include": [
     "README.md",
@@ -59,8 +59,8 @@
     },
     {
       "path": ".github/workflows/ci.yml",
-      "sha256": "e1fb0128a13b8b1180a75ef414a01183326ae3314b1cfd0b38e9d339726544df",
-      "bytes": 1018,
+      "sha256": "b9576f58175e1661778975784111b26c6b9375ef30ad3d860d72eed1cf741025",
+      "bytes": 1076,
       "mode": 420
     },
     {
@@ -353,26 +353,26 @@
     },
     {
       "path": "deploy/docker/Dockerfile.app",
-      "sha256": "012232a4f2f16e4acfbeb3e53cda1513e79425761d5ff9368d6a7a4a67ccb984",
-      "bytes": 1578,
+      "sha256": "ac45fc83bf0c59d46519510899f3075464e9bbc32ea88e62e638a67a3427f9d0",
+      "bytes": 1650,
       "mode": 420
     },
     {
       "path": "deploy/docker/Dockerfile.gateway",
-      "sha256": "79d254c08aaddcec580279973fa632a491b580f6bfd65e83ea3680e7aa6d86b0",
-      "bytes": 1743,
+      "sha256": "034fb5df785a35210d7db7f39685b0f441bd19c55007fb3796f8aa6e5f5d08b1",
+      "bytes": 1815,
       "mode": 420
     },
     {
       "path": "deploy/docker/Dockerfile.mongo",
-      "sha256": "9afc17fcd8ec2b16d3359973b574dba81b71857c0d824a1c8274c6369afa15ff",
-      "bytes": 324,
+      "sha256": "9048a740772b1a76b6b6706fc8a07c0efcd5a7332207a87c5cc2c4b45f3e1427",
+      "bytes": 396,
       "mode": 420
     },
     {
       "path": "deploy/docker/Dockerfile.worker",
-      "sha256": "668f9e0d8d544937b0bd9c00e5f412e088456f17e866a4c78042630a05e2b120",
-      "bytes": 1583,
+      "sha256": "d31376d8c6af8aa0f3e95b2005fc6a865a6af18264369d52c38b217f4a64bee8",
+      "bytes": 1655,
       "mode": 420
     },
     {
@@ -503,8 +503,8 @@
     },
     {
       "path": "deploy/validate-presets.js",
-      "sha256": "ca93eec45264cbbe4f26315494de043050d78d06087808f44535f24ae239a32a",
-      "bytes": 42879,
+      "sha256": "b9af503aa27a30b706a20a2d62ab646ff0ba02a73d1a63196d03c83a7e9e2ebd",
+      "bytes": 42899,
       "mode": 420
     },
     {
@@ -517,6 +517,12 @@
       "path": "docs/P3-P7-status.md",
       "sha256": "2c26e58bcb2bb8ea71912b28cdadb53ba6dd82448b1398f72237d787d57bdf55",
       "bytes": 7228,
+      "mode": 420
+    },
+    {
+      "path": "docs/PUBLIC-RELEASE-PAUSE.md",
+      "sha256": "05a01661d0b93fc2d6102b127f7e2fd67fbaf5778eb3b3bb683f9891a4221fc6",
+      "bytes": 2431,
       "mode": 420
     },
     {
@@ -1631,14 +1637,14 @@
     },
     {
       "path": "docs/licenses/cargo/dlopen2-0.8.2/CARGO-LICENSE-DECLARATION.txt",
-      "sha256": "4db2cb7eef7db93aac79ebab07af14ef27e00cc322ebb9f3744fcc971a1a6b6a",
-      "bytes": 1611,
+      "sha256": "0153c3c729490e105d65aa883c3891323ae801aedbf24eac4edbe21de6d2efa7",
+      "bytes": 1542,
       "mode": 420
     },
     {
       "path": "docs/licenses/cargo/dlopen2_derive-0.4.3/CARGO-LICENSE-DECLARATION.txt",
-      "sha256": "5e3d2d7fe64c4b47b01d4c2e88dbf669bf0950d937b43757b48f965bea4e254a",
-      "bytes": 499,
+      "sha256": "8a2558abfe3b44960eaca355b1f3262b86d27760978f8a34d317d1b3daa92965",
+      "bytes": 480,
       "mode": 420
     },
     {
@@ -2159,8 +2165,8 @@
     },
     {
       "path": "docs/licenses/cargo/generic-array-0.14.7/LICENSE",
-      "sha256": "c09aae9d3c77b531f56351a9947bc7446511d6b025b3255312d3e3442a9a7583",
-      "bytes": 1107,
+      "sha256": "ad4fcfaf8d5b12b97409c137a03d4a4e4b21024c65c54f976cc3b609c1bd5b0f",
+      "bytes": 1087,
       "mode": 420
     },
     {
@@ -3647,8 +3653,8 @@
     },
     {
       "path": "docs/licenses/cargo/proc-macro-error-1.0.4/LICENSE-APACHE",
-      "sha256": "4665f973ccb9393807a7fb1264add6b3513d19abc6b357e4cb52c6fe59cc6a3b",
-      "bytes": 11071,
+      "sha256": "6fd0f3522047150ca7c1939f02bc4a15662a4741a89bc03ae784eefa18caa299",
+      "bytes": 10870,
       "mode": 420
     },
     {
@@ -3683,8 +3689,8 @@
     },
     {
       "path": "docs/licenses/cargo/quick-xml-0.41.0/LICENSE-MIT.md",
-      "sha256": "5b2c207dcf571267ebe0bbdd5bf321f561ddc22ff597e7b363e96f4539507a29",
-      "bytes": 1105,
+      "sha256": "f0cf9b1c62bbe3bd3a69f5f79c7158f513f612b4940a0a812d1db39d605318bc",
+      "bytes": 1082,
       "mode": 420
     },
     {
@@ -5693,14 +5699,14 @@
     },
     {
       "path": "docs/licenses/cargo/windows-native-keyring-store-1.1.0/LICENSE-APACHE",
-      "sha256": "c50e49cbc9917204c7e1d9c046342069e839c4947ef8c6027d23a3184ae73706",
-      "bytes": 11043,
+      "sha256": "78ebc2ea2a1cec9cbec2e1a6fc15e73474fe22bdad7575518e7f4628651d49c4",
+      "bytes": 10842,
       "mode": 420
     },
     {
       "path": "docs/licenses/cargo/windows-native-keyring-store-1.1.0/LICENSE-MIT",
-      "sha256": "1b9916aeb17b63b74372d5493b6c6ce828eef2853e1dc48ac2bba701f148920c",
-      "bytes": 1087,
+      "sha256": "157cc607717b1b372a69f6b4526f6ad18c1279af9f3267835cca2943f37bc07d",
+      "bytes": 1062,
       "mode": 420
     },
     {
@@ -7583,8 +7589,8 @@
     },
     {
       "path": "tools/container-acceptance.js",
-      "sha256": "777764bb31ddbcab6af7125098c2ce1817caf3c583ba6e27478b0e9602ccf98a",
-      "bytes": 4320,
+      "sha256": "ff8d3852f282f910f93cfcd7778c793a299d9732fe1c6db2c953d7d54114ea60",
+      "bytes": 4958,
       "mode": 420
     },
     {
