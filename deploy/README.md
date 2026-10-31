@@ -4,7 +4,7 @@
 
 - 归属：P6 / G03 与 C30–C32（镜像、安装器、Compose 预设与组合验收）。
 - 编排状态：`presets/` 下 12 个文件由 `presets/model.js` 单一来源生成，静态校验通过。
-- 运行状态：**尚未在真实 Docker 主机构建与启动**。本开发机没有容器运行时（`docker`、`podman`、`nerdctl`、`colima` 均不可用），因此镜像标记为 **未构建**，Compose 只完成静态与语义校验，没有任何运行证据。
+- 运行状态：已转移到独立 GitHub Actions Docker 构建器验收；当前结果以 [网页预览版状态](../docs/web-preview.md) 为准。早期“未构建”记录属于历史。macOS 开发机仍无 Docker，不能在本机验证容器。
 - 边界：本目录只负责进程编排、数据卷、健康/就绪顺序与最小配置；不包含模块实现、后台管理页、模型凭据、SMTP/IMAP 凭据或 TLS 证书。
 - 约束：只使用 Node 内置模块；不写真实域名、IP、账号或密钥；`generic` 与 `pku` 共用同一套镜像与同一个数据卷。
 
@@ -16,7 +16,7 @@
 | --- | --- | --- | --- | --- |
 | `gateway` | `pagesai/gateway:local` | `deploy/docker/entrypoints/gateway.js` | 发布 `8080:8080`（唯一对外端口） | 流式反向代理，转发到 `http://app:8080`；自己不做鉴权，也不读 `config.json` |
 | `app` | `pagesai/app:local` | `deploy/docker/entrypoints/app.js` | 仅 `expose 8080` | Node 公共核心 + 已安装模块 + 控制台静态资源；读写 `/data` |
-| `mongo` | `mongo:7` | 官方入口 | 仅集群内 `27017` | 身份与元数据；只在需要时启动 |
+| `mongo` | `pagesai/mongo:local` | MongoDB 7 基础镜像 + 带认证副本集入口 | 仅集群内 `27017` | 身份与元数据；只在需要时启动 |
 | `init` | `pagesai/app:local` | `node tools/init.js` | 无 | 只在 `--profile setup` 下运行一次，写 `/data/config.json` |
 
 关键事实：

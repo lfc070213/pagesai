@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "presets": [
+    {
+      "preset": "core-only.yml",
+      "modules": [],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "single-pages.yml",
+      "modules": [
+        "pages"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "single-disk.yml",
+      "modules": [
+        "disk"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "single-glim.yml",
+      "modules": [
+        "glim"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "single-mail.yml",
+      "modules": [
+        "mail"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "single-survey.yml",
+      "modules": [
+        "survey"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "single-paper.yml",
+      "modules": [
+        "paper"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "pages-disk.yml",
+      "modules": [
+        "pages",
+        "disk"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "survey-disk.yml",
+      "modules": [
+        "survey",
+        "disk"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "paper-disk.yml",
+      "modules": [
+        "paper",
+        "disk"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "full-generic.yml",
+      "modules": [
+        "pages",
+        "disk",
+        "glim",
+        "mail",
+        "survey",
+        "paper"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    },
+    {
+      "preset": "full-pku.yml",
+      "modules": [
+        "pages",
+        "disk",
+        "glim",
+        "mail",
+        "survey",
+        "paper"
+      ],
+      "ready": true,
+      "transactionWrite": true,
+      "moduleIsolation": true,
+      "restartPersistence": true
+    }
+  ],
+  "images": {
+    "app": "sha256:b0a95fa14f31118cae3bd452c79efcda9bc737f59f5d62a736e590f65915271f",
+    "gateway": "sha256:79cf218fe8e8f2f928b13ec9cf91d38433cb500166889b2298e27016257300a2",
+    "mongo": "sha256:076d7a9da2c7e8a49b97b9787c6089bb8467af8584d44ecbb8b2167490872834",
+    "node:24-bookworm-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205": {
+      "id": "sha256:dc1f22974dab4be31a8b56d58cb1f8fc218e83de83ccd831d885b3d7ac1223fb",
+      "repoDigests": [
+        "node@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205"
+      ]
+    },
+    "mongo:7@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7": {
+      "id": "sha256:72404c1083af5306608b7487184154a199b7d183f4ef250339f3c1a0b72e2523",
+      "repoDigests": [
+        "mongo@sha256:c53852c00c23ca9f23fc39690350ffa9a80e3642fe8f96879726d8da0abe80a7"
+      ]
+    }
+  },
+  "provenance": {
+    "date": "2026-10-31",
+    "testedPublicCommit": "e6df365ed201902d58ea4cdc0a11d1cd767f97ab",
+    "workflowRun": "https://github.com/lfc070213/pagesai/actions/runs/41198219612",
+    "scope": "Isolated Linux Docker web/server presets; no real campus link or desktop acceptance"
+  }
+}
