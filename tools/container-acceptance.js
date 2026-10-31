@@ -13,11 +13,14 @@ const pause = ms => new Promise(r => setTimeout(r, ms));
 async function request(route, body, token) {
   let response;
   try {
-    response = await fetch('http://127.0.0.1:8080' + route, { method: body ? 'POST' : 'GET', headers: { ...(body ? { 'Content-Type':'application/json' } : {}), ...(token ? { Authorization: 'Bearer ' + token } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(20000) });
+    // Each preset replaces the entire server behind the same host port. Never
+    // carry an idle HTTP connection from the previous, destroyed deployment.
+    response = await fetch('http://127.0.0.1:8080' + route, { method: body ? 'POST' : 'GET', headers: { Connection: 'close', ...(body ? { 'Content-Type':'application/json' } : {}), ...(token ? { Authorization: 'Bearer ' + token } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(20000) });
   } catch (error) {
     throw new Error(`${body ? 'POST' : 'GET'} ${route}: ${error.message}; cause=${error.cause?.code || error.cause?.message || 'unknown'}`);
   }
-  const value = response.headers.get('content-type')?.includes('application/json') ? await response.json() : null;
+  const text = await response.text();
+  const value = response.headers.get('content-type')?.includes('application/json') ? JSON.parse(text) : null;
   return { status: response.status, value };
 }
 const expect = (condition, label) => { if (!condition) throw Error(label); };
